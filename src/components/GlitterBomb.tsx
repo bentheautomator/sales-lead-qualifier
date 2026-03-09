@@ -118,12 +118,15 @@ export const GlitterBomb: React.FC<GlitterBombProps> = ({
   speed = 1,
   active = true,
 }) => {
+  // Feature flag: NEXT_PUBLIC_ENABLE_GLITTER=false disables the effect
+  const envFlag = process.env.NEXT_PUBLIC_ENABLE_GLITTER;
+  const isEnabled = active && envFlag !== "false";
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<GlitterParticle[]>([]);
   const animationRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!active) return;
+    if (!isEnabled) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -223,9 +226,9 @@ export const GlitterBomb: React.FC<GlitterBombProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [active, density, speed]);
+  }, [isEnabled, density, speed]);
 
-  if (!active) return null;
+  if (!isEnabled) return null;
 
   return (
     <canvas
