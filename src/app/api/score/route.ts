@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { calculateScore } from "@/lib/scoring";
 import { qualificationConfig } from "@/config/qualification";
 import { isValidAnswers } from "@/lib/validation";
+import { signScoreToken, SCORE_COOKIE_NAME, getScoreCookieOptions } from "@/lib/scoreToken";
 import type { DimensionScore } from "@/types";
 
 /**
@@ -67,12 +68,21 @@ export async function POST(request: NextRequest) {
       breakdownPercentages[dimensionKey] = (dimensionScore as DimensionScore).percentage;
     }
 
-    // Return success response
-    return NextResponse.json({
+    // Sign score data into an HMAC-verified cookie
+    const token = signScoreToken({
       totalScore: result.totalScore,
       qualified: result.qualified,
       breakdown: breakdownPercentages,
     });
+
+    // Return full score data in response body + signed cookie for result page
+    const response = NextResponse.json({
+      totalScore: result.totalScore,
+      qualified: result.qualified,
+      breakdown: breakdownPercentages,
+    });
+    response.cookies.set(SCORE_COOKIE_NAME, token, getScoreCookieOptions());
+    return response;
   } catch (error) {
     // Log error for debugging
     console.error("Score calculation error:", error);

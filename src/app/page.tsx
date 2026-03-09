@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { qualificationConfig } from "@/config/qualification";
-import { calculateScore } from "@/lib/scoring";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuestionCard } from "@/components/QuestionCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -48,25 +47,24 @@ export default function Home() {
     setIsSubmitting(true);
 
     try {
-      const scoreResult = calculateScore(answers, qualificationConfig);
-
-      // Extract percentages from breakdown for simpler query params
-      const breakdownPercentages: Record<string, number> = {};
-      Object.entries(scoreResult.breakdown).forEach(([key, value]) => {
-        breakdownPercentages[key] = value.percentage;
+      // POST answers to server for scoring (server sets signed cookie)
+      const response = await fetch("/api/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers }),
       });
 
-      // Prepare query parameters
-      const params = new URLSearchParams({
-        score: String(scoreResult.totalScore),
-        qualified: String(scoreResult.qualified),
-        breakdown: JSON.stringify(breakdownPercentages),
-      });
+      if (!response.ok) {
+        console.error("Score calculation failed");
+        setIsSubmitting(false);
+        return;
+      }
 
-      // Redirect to result page
-      router.push(`/result?${params.toString()}`);
+      // Server has set a signed HttpOnly cookie with the score
+      // Redirect to result page (no sensitive data in URL)
+      router.push("/result");
     } catch (error) {
-      console.error("Error calculating score:", error);
+      console.error("Error submitting answers:", error);
       setIsSubmitting(false);
     }
   }, [answers, router]);

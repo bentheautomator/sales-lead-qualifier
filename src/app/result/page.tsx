@@ -1,57 +1,55 @@
 "use client";
 
-import { Suspense } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { qualificationConfig } from "@/config/qualification";
 import { SparkleEffect } from "@/components/SparkleEffect";
 import { GlitterBomb } from "@/components/GlitterBomb";
-import { isValidScore, isValidQualified, isValidBreakdown } from "@/lib/validation";
 
-function ResultContent() {
-  const searchParams = useSearchParams();
+interface ScoreData {
+  totalScore: number;
+  qualified: boolean;
+  breakdown: Record<string, number>;
+}
+
+export default function ResultPage() {
   const router = useRouter();
-  const score = searchParams.get("score");
-  const qualified = searchParams.get("qualified");
-  const breakdownParam = searchParams.get("breakdown");
+  const [scoreData, setScoreData] = useState<ScoreData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Validate score parameter
-  if (!isValidScore(score)) {
-    router.push("/");
-    return null;
-  }
-
-  // Validate qualified parameter
-  if (!isValidQualified(qualified)) {
-    router.push("/");
-    return null;
-  }
-
-  // Validate and parse breakdown parameter
-  let breakdown: Record<string, number> = {};
-  if (breakdownParam) {
-    try {
-      const parsed = JSON.parse(decodeURIComponent(breakdownParam));
-      if (isValidBreakdown(parsed)) {
-        breakdown = parsed;
-      } else {
-        // Invalid breakdown format, redirect
+  useEffect(() => {
+    async function fetchResult() {
+      try {
+        const response = await fetch("/api/result");
+        if (!response.ok) {
+          router.push("/");
+          return;
+        }
+        const data = await response.json();
+        setScoreData(data);
+      } catch {
         router.push("/");
-        return null;
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      // Failed to parse breakdown, redirect
-      router.push("/");
-      return null;
     }
-  } else {
-    // No breakdown provided, redirect
-    router.push("/");
+    fetchResult();
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="text-gray-500 dark:text-gray-400">Loading results...</div>
+      </div>
+    );
+  }
+
+  if (!scoreData) {
     return null;
   }
 
-  const scoreNum = parseInt(score || "0", 10);
-  const isQualified = qualified === "true";
+  const { totalScore: scoreNum, qualified: isQualified, breakdown } = scoreData;
 
   const outcome = isQualified
     ? qualificationConfig.outcomes.qualified
@@ -227,19 +225,5 @@ function ResultContent() {
         </div>
       </div>
     </>
-  );
-}
-
-export default function ResultPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-          <div className="text-gray-500 dark:text-gray-400">Loading results...</div>
-        </div>
-      }
-    >
-      <ResultContent />
-    </Suspense>
   );
 }
