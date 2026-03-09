@@ -119,3 +119,112 @@ export function isValidAnswers(answers: unknown): answers is Record<string, stri
 
   return true;
 }
+
+/**
+ * Validate email format
+ * Basic check for email validity
+ */
+export function isValidEmail(email: string): boolean {
+  if (typeof email !== "string") {
+    return false;
+  }
+
+  const sanitized = sanitizeString(email, 255);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(sanitized) && sanitized.length >= 5;
+}
+
+/**
+ * Validate phone number (optional, but if provided should be reasonable)
+ * Accepts common formats
+ */
+export function isValidPhone(phone: string | null | undefined): boolean {
+  if (!phone) {
+    return true; // Phone is optional
+  }
+
+  if (typeof phone !== "string") {
+    return false;
+  }
+
+  const sanitized = sanitizeString(phone, 20);
+  const phoneRegex = /^[\d\s\-\+\(\)\.]+$/;
+  return phoneRegex.test(sanitized) && sanitized.length >= 10;
+}
+
+/**
+ * Validate booking form data
+ */
+export function isValidBookingData(data: unknown): data is {
+  name: string;
+  email: string;
+  company: string;
+  phone?: string;
+  preferredTime: string;
+} {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return false;
+  }
+
+  const record = data as Record<string, unknown>;
+
+  // Validate required fields
+  if (typeof record.name !== "string" || !record.name.trim()) {
+    return false;
+  }
+
+  if (typeof record.email !== "string" || !isValidEmail(record.email)) {
+    return false;
+  }
+
+  if (typeof record.company !== "string" || !record.company.trim()) {
+    return false;
+  }
+
+  if (
+    typeof record.preferredTime !== "string" ||
+    !["morning", "afternoon", "evening"].includes(record.preferredTime)
+  ) {
+    return false;
+  }
+
+  // Validate optional phone
+  const phone = record.phone as string | undefined;
+  if (phone && !isValidPhone(phone)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Validate guide signup form data
+ */
+export function isValidGuideData(data: unknown): data is {
+  name: string;
+  email: string;
+  company?: string;
+} {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return false;
+  }
+
+  const record = data as Record<string, unknown>;
+
+  // Validate required fields
+  if (typeof record.name !== "string" || !record.name.trim()) {
+    return false;
+  }
+
+  if (typeof record.email !== "string" || !isValidEmail(record.email)) {
+    return false;
+  }
+
+  // Validate optional company
+  const company = record.company as string | undefined;
+  if (company && (typeof company !== "string" || !company.trim())) {
+    return false;
+  }
+
+  return true;
+}
