@@ -772,14 +772,14 @@ test.describe("CTA Links", () => {
     await expect(page.getByText("Download Our Free Guide")).toHaveAttribute("href", "/guide");
   });
 
-  test("/book is a dead link (404)", async ({ page }) => {
+  test("/book page loads (200)", async ({ page }) => {
     const response = await page.goto("/book");
-    expect(response?.status()).toBe(404);
+    expect(response?.status()).toBe(200);
   });
 
-  test("/guide is a dead link (404)", async ({ page }) => {
+  test("/guide page loads (200)", async ({ page }) => {
     const response = await page.goto("/guide");
-    expect(response?.status()).toBe(404);
+    expect(response?.status()).toBe(200);
   });
 });
 

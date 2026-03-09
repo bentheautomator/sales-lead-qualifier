@@ -24,24 +24,25 @@ async function extractLinks(page: Page, pageUrl: string): Promise<LinkInfo[]> {
   }, pageUrl);
 }
 
-/** Navigate through the form to get to the qualified result page */
+/** Navigate through the form to get to the qualified result page (best answers) */
 async function getToQualifiedResult(page: Page) {
   await page.goto("/");
-  const gridButtons = page.locator(".grid button");
-  // Budget (2 questions × first option)
-  await gridButtons.nth(0).click();
-  await gridButtons.nth(4).click();
+  // Budget
+  await page.getByRole("button", { name: "$100K+", exact: true }).click();
+  await page.getByRole("button", { name: "Yes, fully approved", exact: true }).click();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   // Authority
-  await gridButtons.nth(0).click();
-  await gridButtons.nth(4).click();
+  await page.getByRole("button", { name: "Final decision maker", exact: true }).click();
+  await page.getByRole("button", { name: "Quick decision, minimal approval", exact: true }).click();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   // Need
-  await gridButtons.nth(0).click();
-  await gridButtons.nth(4).click();
+  await page
+    .getByRole("button", { name: "Causing significant business impact", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Immediate (next 30 days)", exact: true }).click();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   // Timeline
-  await gridButtons.nth(0).click();
+  await page.getByRole("button", { name: "Within 60 days", exact: true }).click();
   await page.getByRole("button", { name: "Submit" }).click();
   await page.waitForURL(/\/result/);
 }
@@ -49,21 +50,22 @@ async function getToQualifiedResult(page: Page) {
 /** Navigate through the form with worst answers to get disqualified result */
 async function getToDisqualifiedResult(page: Page) {
   await page.goto("/");
-  const gridButtons = page.locator(".grid button");
-  // Budget (last options)
-  await gridButtons.nth(3).click();
-  await gridButtons.nth(7).click();
+  // Budget
+  await page.getByRole("button", { name: "Under $10K or unsure", exact: true }).click();
+  await page.getByRole("button", { name: "Not approved yet", exact: true }).click();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   // Authority
-  await gridButtons.nth(3).click();
-  await gridButtons.nth(7).click();
+  await page.getByRole("button", { name: "Just gathering information", exact: true }).click();
+  await page.getByRole("button", { name: "Extended, complex approval", exact: true }).click();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   // Need
-  await gridButtons.nth(3).click();
-  await gridButtons.nth(7).click();
+  await page
+    .getByRole("button", { name: "Minor issues or exploring options", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Someday or exploring", exact: true }).click();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   // Timeline
-  await gridButtons.nth(3).click();
+  await page.getByRole("button", { name: "More than 1 year or undecided", exact: true }).click();
   await page.getByRole("button", { name: "Submit" }).click();
   await page.waitForURL(/\/result/);
 }
