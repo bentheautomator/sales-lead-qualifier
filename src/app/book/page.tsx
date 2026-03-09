@@ -165,7 +165,7 @@ export default function BookPage() {
                 </div>
 
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  📧 We&apos;ve sent a confirmation to{" "}
+                  Submitted as{" "}
                   <span className="font-mono font-medium">
                     {sanitizeString(submittedData.email, 255)}
                   </span>

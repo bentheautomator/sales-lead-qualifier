@@ -198,7 +198,7 @@ export default function GuidePage() {
                 </div>
 
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  📧 We&apos;ve also sent the guide to{" "}
+                  Submitted as{" "}
                   <span className="font-mono font-medium">
                     {sanitizeString(submittedData.email, 255)}
                   </span>
