@@ -17,7 +17,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentDimension = DIMENSIONS[currentStep];
-  const [dimensionKey, dimension] = currentDimension as [
+  const [, dimension] = currentDimension as [
     string,
     Dimension,
   ];
@@ -87,7 +87,7 @@ export default function Home() {
             Sales Lead Qualifier
           </h1>
           <p className="text-lg text-gray-600">
-            Let's find out if we're the right fit for your business
+            Let&apos;s find out if we&apos;re the right fit for your business
           </p>
         </div>
 

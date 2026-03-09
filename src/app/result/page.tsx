@@ -1,37 +1,21 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { qualificationConfig } from "@/config/qualification";
-
-interface ScoreBreakdown {
-  score?: number;
-  maxScore?: number;
-  percentage?: number;
-  [key: string]: number | undefined;
-}
 
 function ResultContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
   const score = searchParams.get("score");
   const qualified = searchParams.get("qualified");
   const breakdownParam = searchParams.get("breakdown");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Redirect if no query params
-  if (mounted && (!score || !qualified || !breakdownParam)) {
+  if (!score || !qualified || !breakdownParam) {
     router.push("/");
     return null;
-  }
-
-  if (!mounted) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   const scoreNum = parseInt(score || "0", 10);
@@ -189,12 +173,12 @@ function ResultContent() {
 
             {/* Start Over Link */}
             <div className="text-center">
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
                 ← Start Over
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -4,9 +4,6 @@
  */
 
 import type {
-  Question,
-  Dimension,
-  Outcome,
   QualificationConfig,
 } from "@/types";
 

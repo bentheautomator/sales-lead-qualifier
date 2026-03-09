@@ -81,7 +81,9 @@ describe("Scoring Engine", () => {
       const result = calculateScore(answers, qualificationConfig);
 
       expect(result.qualified).toBe(true);
-      expect(result.totalScore).toBeGreaterThanOrEqual(qualificationConfig.threshold);
+      expect(result.totalScore).toBeGreaterThanOrEqual(
+        qualificationConfig.threshold,
+      );
       expect(result.totalScore).toBe(100);
     });
 
@@ -161,7 +163,9 @@ describe("Scoring Engine", () => {
 
       const result = calculateScore(answers, qualificationConfig);
 
-      expect(result.totalScore).toBeGreaterThanOrEqual(qualificationConfig.threshold);
+      expect(result.totalScore).toBeGreaterThanOrEqual(
+        qualificationConfig.threshold,
+      );
       expect(result.qualified).toBe(true);
     });
 
@@ -208,7 +212,10 @@ describe("Scoring Engine", () => {
         implementation: "distant", // 0
       };
 
-      const budgetResult = calculateScore(budgetHeavyAnswers, qualificationConfig);
+      const budgetResult = calculateScore(
+        budgetHeavyAnswers,
+        qualificationConfig,
+      );
       const needResult = calculateScore(needHeavyAnswers, qualificationConfig);
 
       // Need is equally weighted as Budget (0.3 each), so scores should be similar
@@ -218,7 +225,9 @@ describe("Scoring Engine", () => {
 
       // Both should have similar totalScore since budget and need are equally weighted
       // and both have strong answers, while authority and timeline are weak
-      const budgetDiff = Math.abs(budgetResult.totalScore - needResult.totalScore);
+      const budgetDiff = Math.abs(
+        budgetResult.totalScore - needResult.totalScore,
+      );
       expect(budgetDiff).toBeLessThan(10); // Allow small variance due to authority
     });
 
@@ -242,7 +251,7 @@ describe("Scoring Engine", () => {
       // Verify weights sum to 1.0
       const weightSum = Object.values(qualificationConfig.dimensions).reduce(
         (sum, dim) => sum + dim.weight,
-        0
+        0,
       );
       expect(weightSum).toBe(1);
     });
@@ -385,8 +394,9 @@ describe("Scoring Engine", () => {
 
       // Check that breakdown percentages have at most 1 decimal place
       Object.values(result.breakdown).forEach((dimension) => {
-        const decimalPlaces =
-          (dimension.percentage.toString().split(".")[1] || "").length;
+        const decimalPlaces = (
+          dimension.percentage.toString().split(".")[1] || ""
+        ).length;
         expect(decimalPlaces).toBeLessThanOrEqual(1);
       });
 
