@@ -1,0 +1,9 @@
+{
+  "name": "Sales Lead Qualifier",
+  "description": "Config-driven BANT sales lead qualification tool with instant qualify/disqualify results",
+  "language": "TypeScript",
+  "framework": "Next.js",
+  "stack": {
+    "services": ["next-dev"]
+  }
+}
