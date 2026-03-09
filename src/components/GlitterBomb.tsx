@@ -230,8 +230,8 @@ export const GlitterBomb: React.FC<GlitterBombProps> = ({
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 9999 }}
+      className="fixed inset-0"
+      style={{ zIndex: 9999, pointerEvents: "none" }}
       aria-hidden="true"
     />
   );
