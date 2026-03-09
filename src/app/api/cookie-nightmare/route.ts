@@ -1,131 +1,162 @@
-// DELIBERATELY INSECURE — FOR SECURITY TESTING ONLY — DO NOT SHIP
-// This route demonstrates TERRIBLE cookie security practices for vulnerability scanning.
-// Cookie Monster and The Sentinel will (correctly) flag all of these issues.
+/**
+ * Secure Cookie Demo Endpoint
+ *
+ * Demonstrates proper cookie security practices:
+ * - HttpOnly on all sensitive cookies (prevents XSS theft)
+ * - Secure flag on all cookies (HTTPS-only transport)
+ * - SameSite=Strict for CSRF protection
+ * - Scoped Path restrictions
+ * - Reasonable expiration times
+ * - Cryptographically random session tokens
+ * - No PII in cookie values
+ * - Input validation on POST
+ */
 
 import { NextRequest, NextResponse } from "next/server";
 
-/**
- * INSECURE COOKIE NIGHTMARE ENDPOINT
- *
- * This endpoint intentionally violates cookie security best practices:
- * - No HttpOnly flag (XSS can steal cookies)
- * - No Secure flag (sent over HTTP)
- * - SameSite=None without Secure (CSRF vulnerability)
- * - Overly broad Domain scope
- * - No Path restriction (available to entire app)
- * - No expiration (permanent storage)
- * - Session token with predictable entropy
- * - Sensitive data stored in plaintext in cookie value
- *
- * DO NOT DEPLOY. TESTING ONLY.
- */
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const response = NextResponse.json({
-    message: "Insecure cookies set. This is a security testing endpoint only.",
+    message: "Secure cookies set. All cookies follow security best practices.",
     timestamp: new Date().toISOString(),
   });
 
-  // VULNERABILITY 1: Session cookie WITHOUT HttpOnly flag
-  // Attackers can read this via document.cookie in XSS attacks
+  // SECURE: Session cookie with full protection
+  // HttpOnly prevents XSS from reading it, Secure ensures HTTPS-only
   response.cookies.set({
-    name: "session_token",
-    value: "sk_test_12345678_totally_predictable",
-    maxAge: 3600, // 1 hour
-    // MISSING: httpOnly: true,
-    path: "/", // Too broad, should be restricted
+    name: "__Host-session_token",
+    value: crypto.randomUUID(),
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 3600, // 1 hour — short-lived session
+    path: "/",
   });
 
-  // VULNERABILITY 2: Auth token WITHOUT Secure flag
-  // Will be sent over plain HTTP connections
+  // SECURE: Auth token with all flags set
+  // __Host- prefix enforces Secure + Path=/ (browser-level guarantee)
   response.cookies.set({
-    name: "auth_token",
-    value: "auth_user_id_12345_secret_key_plaintext",
-    // MISSING: secure: true,
-    httpOnly: true, // Has this one, but missing Secure
+    name: "__Host-auth_token",
+    value: crypto.randomUUID(),
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 86400, // 24 hours — reasonable auth lifetime
+    path: "/",
+  });
+
+  // SECURE: CSRF token — SameSite=Strict prevents cross-site requests
+  response.cookies.set({
+    name: "__Host-csrf_token",
+    value: crypto.randomUUID(),
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 1800, // 30 minutes
+    path: "/",
+  });
+
+  // SECURE: Session scoped to API paths only
+  // Path restriction limits cookie exposure surface
+  response.cookies.set({
+    name: "__Host-api_session",
+    value: crypto.randomUUID(),
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 3600,
+    path: "/api",
+  });
+
+  // SECURE: Preference cookie (non-sensitive, still protected)
+  // Even non-sensitive cookies get Secure + SameSite
+  response.cookies.set({
+    name: "theme_preference",
+    value: "dark",
+    httpOnly: false, // OK — theme is not sensitive, client needs to read it
+    secure: true,
+    sameSite: "lax",
+    maxAge: 86400 * 365, // 1 year — preferences can be long-lived
+    path: "/",
+  });
+
+  // SECURE: User identifier — opaque token, no PII
+  // Never store email, name, or score in cookie values
+  response.cookies.set({
+    name: "__Host-user_id",
+    value: crypto.randomUUID(), // Opaque identifier, not sequential
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
     maxAge: 86400 * 7, // 7 days
     path: "/",
   });
 
-  // VULNERABILITY 3: SameSite=None WITHOUT Secure flag
-  // This is a CSRF nightmare in older browsers
+  // SECURE: Short-lived session with cryptographic randomness
   response.cookies.set({
-    name: "cross_site_token",
-    value: "csrf_token_no_protection_at_all",
-    sameSite: "none", // CSRF vulnerability
-    // MISSING: secure: true,
+    name: "__Host-ephemeral_session",
+    value: crypto.randomUUID(),
     httpOnly: true,
-    maxAge: 1800,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 900, // 15 minutes — short-lived for sensitive operations
     path: "/",
-  });
-
-  // VULNERABILITY 4: Overly broad Domain scope
-  // Available to subdomains that shouldn't have access
-  response.cookies.set({
-    name: "user_session",
-    value: "user_data_session_with_wide_scope",
-    domain: "bentheautomator.com", // Overly broad
-    path: "/", // Not restricted to /api paths
-    maxAge: 604800, // 7 days
-    httpOnly: false, // XSS vulnerable
-  });
-
-  // VULNERABILITY 5: Cookie with NO expiration (lives forever)
-  // Stored permanently in browser
-  response.cookies.set({
-    name: "persistent_user_id",
-    value: "user_123456789",
-    // MISSING: maxAge or expires — cookie never expires
-    httpOnly: false,
-    path: "/",
-  });
-
-  // VULNERABILITY 6: Sensitive data IN cookie value (not encrypted)
-  // User email and score exposed to anyone who can read the cookie
-  response.cookies.set({
-    name: "user_profile",
-    value: JSON.stringify({
-      email: "user@example.com",
-      userId: "user_123",
-      score: 95,
-      subscription: "premium",
-      lastLogin: new Date().toISOString(),
-    }),
-    // NO ENCRYPTION. Data is plaintext in the cookie.
-    httpOnly: false,
-    path: "/",
-    maxAge: 86400,
-  });
-
-  // VULNERABILITY 7: Predictable session token
-  // Sequential IDs are trivial to brute-force
-  const predictableToken = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  response.cookies.set({
-    name: "weak_session",
-    value: predictableToken, // Weak entropy
-    path: "/",
-    maxAge: 3600,
   });
 
   return response;
 }
 
 export async function POST(request: NextRequest) {
-  // VULNERABILITY 8: Accepts arbitrary cookie values from client
-  // No validation, no sanitization
-  const body = await request.json().catch(() => ({}));
-  const customCookieValue = body.cookieValue || "user_controlled_value";
+  // Validate Content-Type
+  const contentType = request.headers.get("content-type");
+  if (!contentType?.includes("application/json")) {
+    return NextResponse.json({ error: "Content-Type must be application/json" }, { status: 415 });
+  }
+
+  // Validate CSRF token from cookie matches request
+  const csrfCookie = request.cookies.get("__Host-csrf_token")?.value;
+  const csrfHeader = request.headers.get("x-csrf-token");
+  if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+    return NextResponse.json({ error: "CSRF token mismatch" }, { status: 403 });
+  }
+
+  // Parse and validate input
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  // Validate and sanitize cookie value
+  const rawValue = body.cookieValue;
+  if (typeof rawValue !== "string" || rawValue.length === 0 || rawValue.length > 256) {
+    return NextResponse.json(
+      { error: "cookieValue must be a string between 1-256 characters" },
+      { status: 400 },
+    );
+  }
+
+  // Strip any control characters or injection attempts
+  const sanitized = rawValue.replace(/[^\w\s-_.~]/g, "").trim();
+  if (sanitized.length === 0) {
+    return NextResponse.json(
+      { error: "cookieValue contains only invalid characters" },
+      { status: 400 },
+    );
+  }
 
   const response = NextResponse.json({
-    message: "Custom insecure cookie set",
+    message: "Secure user-controlled cookie set",
   });
 
-  // Accepting user-controlled input directly into cookie
+  // Set with full security flags even for user-controlled values
   response.cookies.set({
-    name: "user_controlled_cookie",
-    value: customCookieValue,
-    httpOnly: false,
+    name: "__Host-user_preference",
+    value: sanitized,
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 86400,
     path: "/",
   });
 
