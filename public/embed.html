@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Lead Qualifier</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 50%, #f1f5f9 100%);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    color: #334155;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    animation: floatIn 0.5s ease-out;
+  }
+
+  .header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .header p {
+    font-size: 1.1rem;
+    color: #64748b;
+  }
+
+  /* Progress Bar */
+  .progress-wrap {
+    margin-bottom: 2.5rem;
+    animation: floatIn 0.5s ease-out 0.1s both;
+  }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    transition: color 0.3s;
+  }
+
+  .progress-label.active { color: #2563eb; }
+  .progress-label.done { color: #16a34a; }
+
+  .progress-track {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  /* Card */
+  .card {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    animation: floatIn 0.5s ease-out 0.2s both;
+  }
+
+  .question-group { margin-bottom: 2rem; }
+  .question-group:last-child { margin-bottom: 0; }
+
+  .question-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    color: #475569;
+    background: #fff;
+  }
+
+  .option:hover {
+    border-color: #93c5fd;
+    background: #f0f7ff;
+  }
+
+  .option.selected {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #1e40af;
+    font-weight: 500;
+  }
+
+  .option-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .option.selected .option-radio {
+    border-color: #2563eb;
+    background: #2563eb;
+  }
+
+  .option.selected .option-radio::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    animation: floatIn 0.5s ease-out 0.3s both;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-back {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  .btn-back:hover { background: #e2e8f0; }
+  .btn-back:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-next {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+
+  .btn-next:hover { background: #1d4ed8; }
+  .btn-next:disabled { background: #93c5fd; cursor: not-allowed; box-shadow: none; }
+
+  .btn-submit {
+    background: #16a34a;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-submit:hover { background: #15803d; }
+  .btn-submit:disabled { background: #86efac; cursor: not-allowed; box-shadow: none; }
+
+  .step-text {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-top: 1.5rem;
+  }
+
+  /* Result */
+  .result-card {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    animation: floatIn 0.5s ease-out;
+  }
+
+  .result-header {
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+
+  .result-header.qualified {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-bottom: 4px solid #86efac;
+  }
+
+  .result-header.disqualified {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-bottom: 4px solid #fde68a;
+  }
+
+  .result-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+
+  .result-header.qualified .result-icon { background: #dcfce7; }
+  .result-header.disqualified .result-icon { background: #fef3c7; }
+
+  .result-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .result-header.qualified h2 { color: #14532d; }
+  .result-header.disqualified h2 { color: #78350f; }
+
+  .result-score {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+  }
+
+  .result-header.qualified .result-score { color: #16a34a; }
+  .result-header.disqualified .result-score { color: #d97706; }
+
+  .result-body { padding: 2rem; }
+
+  .result-description {
+    font-size: 1.05rem;
+    color: #475569;
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+  }
+
+  /* Breakdown */
+  .breakdown { margin-bottom: 2rem; }
+
+  .breakdown h3 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+  }
+
+  .breakdown-item {
+    margin-bottom: 0.75rem;
+  }
+
+  .breakdown-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+    color: #334155;
+  }
+
+  .breakdown-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .breakdown-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+
+  .breakdown-fill.high { background: linear-gradient(90deg, #16a34a, #22c55e); }
+  .breakdown-fill.mid { background: linear-gradient(90deg, #d97706, #f59e0b); }
+  .breakdown-fill.low { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+  .btn-cta {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-cta:active { transform: scale(0.97); }
+
+  .btn-cta.qualified {
+    background: #16a34a;
+    box-shadow: 0 2px 12px rgba(22,163,74,0.3);
+  }
+
+  .btn-cta.qualified:hover { background: #15803d; }
+
+  .btn-cta.disqualified {
+    background: #d97706;
+    box-shadow: 0 2px 12px rgba(217,119,6,0.3);
+  }
+
+  .btn-cta.disqualified:hover { background: #b45309; }
+
+  .restart-link {
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #64748b;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+
+  .restart-link:hover { color: #2563eb; }
+
+  /* Spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  /* Float in */
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ===== QUIZ VIEW ===== -->
+  <div id="quiz-view">
+    <div class="header">
+      <h1>Sales Lead Qualifier</h1>
+      <p>Let's find out if we're the right fit for your business</p>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-labels" id="progress-labels"></div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="card" id="questions-card"></div>
+
+    <div class="actions">
+      <button class="btn btn-back" id="btn-back" disabled>Back</button>
+      <button class="btn btn-next" id="btn-next" disabled>Next</button>
+      <button class="btn btn-submit hidden" id="btn-submit" disabled>
+        Submit
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </button>
+    </div>
+
+    <p class="step-text" id="step-text"></p>
+  </div>
+
+  <!-- ===== RESULT VIEW ===== -->
+  <div id="result-view" class="hidden"></div>
+
+</div>
+
+<script>
+// ─── CONFIG (mirrors src/config/qualification.ts) ───
+const CONFIG = {
+  dimensions: {
+    budget: {
+      name: "Budget",
+      weight: 0.3,
+      questions: [
+        {
+          id: "budget-range",
+          text: "What's your annual budget for solutions in this area?",
+          options: [
+            { label: "$100K+", value: "large", points: 100 },
+            { label: "$25K – $100K", value: "medium", points: 70 },
+            { label: "$10K – $25K", value: "small", points: 40 },
+            { label: "Under $10K or unsure", value: "minimal", points: 0 }
+          ]
+        },
+        {
+          id: "budget-approval",
+          text: "Is budget already approved for this initiative?",
+          options: [
+            { label: "Yes, fully approved", value: "approved", points: 100 },
+            { label: "Likely to be approved", value: "likely", points: 60 },
+            { label: "Still needs review", value: "pending", points: 30 },
+            { label: "Not approved yet", value: "unapproved", points: 0 }
+          ]
+        }
+      ]
+    },
+    authority: {
+      name: "Authority",
+      weight: 0.25,
+      questions: [
+        {
+          id: "decision-role",
+          text: "What's your role in the purchasing decision?",
+          options: [
+            { label: "Final decision maker", value: "decision_maker", points: 100 },
+            { label: "Key influencer/evaluator", value: "influencer", points: 80 },
+            { label: "Contributor to evaluation", value: "contributor", points: 50 },
+            { label: "Just gathering information", value: "researcher", points: 10 }
+          ]
+        },
+        {
+          id: "buying-process",
+          text: "How formal is your buying process?",
+          options: [
+            { label: "Quick decision, minimal approval", value: "agile", points: 100 },
+            { label: "Standard process with clear steps", value: "standard", points: 75 },
+            { label: "Formal RFP and evaluation", value: "formal", points: 60 },
+            { label: "Extended, complex approval", value: "complex", points: 20 }
+          ]
+        }
+      ]
+    },
+    need: {
+      name: "Need",
+      weight: 0.3,
+      questions: [
+        {
+          id: "pain-points",
+          text: "How critical are your current pain points?",
+          options: [
+            { label: "Causing significant business impact", value: "critical", points: 100 },
+            { label: "Creating real productivity challenges", value: "high", points: 80 },
+            { label: "Noticeable inefficiencies", value: "moderate", points: 50 },
+            { label: "Minor issues or exploring options", value: "low", points: 10 }
+          ]
+        },
+        {
+          id: "urgency",
+          text: "When do you need to solve this?",
+          options: [
+            { label: "Immediate (next 30 days)", value: "immediate", points: 100 },
+            { label: "This quarter", value: "quarter", points: 80 },
+            { label: "This year", value: "year", points: 50 },
+            { label: "Someday or exploring", value: "someday", points: 0 }
+          ]
+        }
+      ]
+    },
+    timeline: {
+      name: "Timeline",
+      weight: 0.15,
+      questions: [
+        {
+          id: "implementation",
+          text: "What's your target implementation timeline?",
+          options: [
+            { label: "Within 60 days", value: "quick", points: 100 },
+            { label: "Within 6 months", value: "standard", points: 70 },
+            { label: "Within 1 year", value: "extended", points: 40 },
+            { label: "More than 1 year or undecided", value: "distant", points: 0 }
+          ]
+        }
+      ]
+    }
+  },
+  threshold: 70,
+  outcomes: {
+    qualified: {
+      headline: "Great news — you're a strong fit!",
+      description: "Based on your answers, you meet our qualification criteria and we believe we can deliver significant value. Let's discuss how we can help you achieve your goals.",
+      cta: "Book a Strategy Call",
+      ctaUrl: "/book"
+    },
+    disqualified: {
+      headline: "Thanks for your interest",
+      description: "While your needs may not be the right fit right now, we've prepared some helpful resources that might be valuable as you continue your evaluation. Feel free to reach out when your priorities change.",
+      cta: "Download Our Free Guide",
+      ctaUrl: "/guide"
+    }
+  }
+};
+
+// ─── STATE ───
+const DIMS = Object.entries(CONFIG.dimensions);
+let currentStep = 0;
+let answers = {};
+
+// ─── SCORING (mirrors src/lib/scoring.ts) ───
+function calculateScore(answers, config) {
+  const breakdown = {};
+  let weightedSum = 0;
+
+  for (const [key, dim] of Object.entries(config.dimensions)) {
+    let dimScore = 0, maxScore = 0;
+    for (const q of dim.questions) {
+      const sel = q.options.find(o => o.value === answers[q.id]);
+      dimScore += sel ? sel.points : 0;
+      maxScore += Math.max(...q.options.map(o => o.points));
+    }
+    const pct = maxScore > 0 ? (dimScore / maxScore) * 100 : 0;
+    breakdown[key] = { score: dimScore, maxScore, percentage: Math.round(pct * 10) / 10 };
+    weightedSum += pct * dim.weight;
+  }
+
+  const totalScore = Math.round(weightedSum * 10) / 10;
+  return { totalScore, qualified: totalScore >= config.threshold, breakdown };
+}
+
+// ─── RENDER ───
+function render() {
+  const [dimKey, dim] = DIMS[currentStep];
+
+  // Progress labels
+  const labelsEl = document.getElementById('progress-labels');
+  labelsEl.innerHTML = DIMS.map(([, d], i) => {
+    const cls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+    return '<span class="progress-label ' + cls + '">' + d.name + '</span>';
+  }).join('');
+
+  // Progress fill
+  document.getElementById('progress-fill').style.width =
+    ((currentStep / DIMS.length) * 100) + '%';
+
+  // Questions
+  const card = document.getElementById('questions-card');
+  card.innerHTML = dim.questions.map(q => {
+    const optionsHtml = q.options.map(o => {
+      const sel = answers[q.id] === o.value ? ' selected' : '';
+      return '<div class="option' + sel + '" data-qid="' + q.id + '" data-val="' + o.value + '">' +
+        '<div class="option-radio"></div>' +
+        '<span>' + o.label + '</span></div>';
+    }).join('');
+    return '<div class="question-group">' +
+      '<div class="question-text">' + q.text + '</div>' +
+      '<div class="options">' + optionsHtml + '</div></div>';
+  }).join('');
+
+  // Bind option clicks
+  card.querySelectorAll('.option').forEach(el => {
+    el.addEventListener('click', function() {
+      answers[this.dataset.qid] = this.dataset.val;
+      render();
+    });
+  });
+
+  // Buttons
+  const allAnswered = dim.questions.every(q => answers[q.id]);
+  const isLast = currentStep === DIMS.length - 1;
+
+  document.getElementById('btn-back').disabled = currentStep === 0;
+  document.getElementById('btn-next').disabled = !allAnswered;
+  document.getElementById('btn-next').classList.toggle('hidden', isLast);
+  document.getElementById('btn-submit').classList.toggle('hidden', !isLast);
+  document.getElementById('btn-submit').disabled = !allAnswered;
+
+  // Step text
+  document.getElementById('step-text').textContent =
+    (currentStep + 1) + ' of ' + DIMS.length + ' steps completed';
+}
+
+function showResult() {
+  const result = calculateScore(answers, CONFIG);
+  const outcome = result.qualified ? CONFIG.outcomes.qualified : CONFIG.outcomes.disqualified;
+  const status = result.qualified ? 'qualified' : 'disqualified';
+  const icon = result.qualified ? '&#10003;' : '&#9888;';
+
+  let breakdownHtml = '';
+  for (const [key, dim] of DIMS) {
+    const b = result.breakdown[key];
+    const level = b.percentage >= 70 ? 'high' : b.percentage >= 40 ? 'mid' : 'low';
+    breakdownHtml +=
+      '<div class="breakdown-item">' +
+        '<div class="breakdown-label"><span>' + dim.name + '</span><span>' + b.percentage + '%</span></div>' +
+        '<div class="breakdown-bar"><div class="breakdown-fill ' + level + '" style="width:' + b.percentage + '%"></div></div>' +
+      '</div>';
+  }
+
+  document.getElementById('quiz-view').classList.add('hidden');
+  const rv = document.getElementById('result-view');
+  rv.classList.remove('hidden');
+  rv.innerHTML =
+    '<div class="result-card">' +
+      '<div class="result-header ' + status + '">' +
+        '<div class="result-icon">' + icon + '</div>' +
+        '<h2>' + outcome.headline + '</h2>' +
+        '<div class="result-score">' + result.totalScore + '</div>' +
+        '<p style="color:#64748b;font-size:0.9rem">out of 100</p>' +
+      '</div>' +
+      '<div class="result-body">' +
+        '<p class="result-description">' + outcome.description + '</p>' +
+        '<div class="breakdown"><h3>Score Breakdown</h3>' + breakdownHtml + '</div>' +
+        '<a class="btn-cta ' + status + '" href="' + outcome.ctaUrl + '">' + outcome.cta + '</a>' +
+        '<button class="restart-link" id="btn-restart">Start Over</button>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('btn-restart').addEventListener('click', restart);
+}
+
+function restart() {
+  currentStep = 0;
+  answers = {};
+  document.getElementById('result-view').classList.add('hidden');
+  document.getElementById('quiz-view').classList.remove('hidden');
+  render();
+}
+
+// ─── EVENTS ───
+document.getElementById('btn-back').addEventListener('click', () => {
+  if (currentStep > 0) { currentStep--; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  if (currentStep < DIMS.length - 1) { currentStep++; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+});
+
+document.getElementById('btn-submit').addEventListener('click', () => {
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('btn-submit').innerHTML = '<div class="spinner"></div> Submitting...';
+  setTimeout(showResult, 600);
+});
+
+// ─── INIT ───
+render();
+</script>
+</body>
+</html>

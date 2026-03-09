@@ -1,21 +1,4 @@
-import { chromium } from "playwright";
-import { writeFileSync, mkdirSync } from "fs";
-import path from "path";
-
-const outputDir = path.join(process.cwd(), "public");
-const outputPath = path.join(outputDir, "sales-qualification-playbook.pdf");
-const htmlPath = path.join(outputDir, "sales-qualification-playbook.html");
-
-try {
-  mkdirSync(outputDir, { recursive: true });
-} catch {
-  // exists
-}
-
-// ============================================================
-// HTML CONTENT — single source of truth for both HTML and PDF
-// ============================================================
-const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -448,36 +431,4 @@ const html = `<!DOCTYPE html>
 <div class="footer">Created by the Sales Lead Qualifier Team</div>
 
 </body>
-</html>`;
-
-// ============================================================
-// Write HTML (serves as standalone version too)
-// ============================================================
-writeFileSync(htmlPath, html, "utf-8");
-console.warn(`HTML generated: ${htmlPath}`);
-
-// ============================================================
-// Convert HTML to PDF via Playwright
-// ============================================================
-async function generatePDF() {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
-
-  await page.setContent(html, { waitUntil: "networkidle" });
-
-  await page.pdf({
-    path: outputPath,
-    format: "Letter",
-    margin: { top: "1in", bottom: "1in", left: "1in", right: "1in" },
-    printBackground: true,
-    displayHeaderFooter: false,
-  });
-
-  await browser.close();
-  console.warn(`PDF generated: ${outputPath}`);
-}
-
-generatePDF().catch((err) => {
-  console.error("Error generating PDF:", err);
-  process.exit(1);
-});
+</html>
