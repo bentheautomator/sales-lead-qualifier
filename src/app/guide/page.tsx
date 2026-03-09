@@ -11,8 +11,10 @@ export default function GuidePage() {
     email: "",
     company: "",
   });
+  const [submittedData, setSubmittedData] = useState({ name: "", email: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,21 +47,25 @@ export default function GuidePage() {
           return;
         }
 
+        // Save submitted data before resetting form
+        setSubmittedData({ name: formData.name, email: formData.email });
+
         // Trigger PDF download if content-type is PDF
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/pdf")) {
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
+          setPdfUrl(url);
           const a = document.createElement("a");
           a.href = url;
           a.download = "sales-qualification-playbook.pdf";
           document.body.appendChild(a);
           a.click();
-          window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
         }
 
         setIsSuccess(true);
+        setIsSubmitting(false);
         setFormData({
           name: "",
           email: "",
@@ -118,7 +124,7 @@ export default function GuidePage() {
 
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
                 Thanks for your interest,{" "}
-                <span className="font-semibold">{sanitizeString(formData.name, 255)}</span>!
+                <span className="font-semibold">{sanitizeString(submittedData.name, 255)}</span>!
               </p>
             </div>
 
@@ -127,10 +133,31 @@ export default function GuidePage() {
                 <div className="bg-gradient-to-br from-amber-50 dark:from-amber-900/20 to-orange-50 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-lg p-8 text-center">
                   <div className="mb-4 text-4xl">📄</div>
                   <p className="text-gray-700 dark:text-gray-300 mb-2">
-                    Your PDF should download automatically. If it doesn&apos;t, you can find the
-                    guide in your downloads.
+                    Your PDF should download automatically. If it didn&apos;t, click below:
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {pdfUrl && (
+                    <a
+                      href={pdfUrl}
+                      download="sales-qualification-playbook.pdf"
+                      className="inline-flex items-center gap-2 mt-3 px-6 py-3 rounded-lg font-semibold text-white bg-amber-600 hover:bg-amber-700 transition-all duration-200 active:scale-95 shadow-md hover:shadow-lg hover:shadow-amber-500/30"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Download PDF Again
+                    </a>
+                  )}
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
                     &quot;The Sales Qualification Playbook: A Practical Guide to Closing More
                     Deals&quot;
                   </p>
@@ -173,7 +200,7 @@ export default function GuidePage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   📧 We&apos;ve also sent the guide to{" "}
                   <span className="font-mono font-medium">
-                    {sanitizeString(formData.email, 255)}
+                    {sanitizeString(submittedData.email, 255)}
                   </span>
                 </p>
               </div>

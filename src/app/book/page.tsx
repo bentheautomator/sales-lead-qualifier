@@ -13,6 +13,11 @@ export default function BookPage() {
     phone: "",
     preferredTime: "morning",
   });
+  const [submittedData, setSubmittedData] = useState({
+    name: "",
+    email: "",
+    preferredTime: "morning",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +52,13 @@ export default function BookPage() {
           return;
         }
 
+        setSubmittedData({
+          name: formData.name,
+          email: formData.email,
+          preferredTime: formData.preferredTime,
+        });
         setIsSuccess(true);
+        setIsSubmitting(false);
         setFormData({
           name: "",
           email: "",
@@ -108,16 +119,23 @@ export default function BookPage() {
 
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
                 Thank you,{" "}
-                <span className="font-semibold">{sanitizeString(formData.name, 255)}</span>!
+                <span className="font-semibold">{sanitizeString(submittedData.name, 255)}</span>!
               </p>
             </div>
 
             <div className="px-8 py-12">
               <div className="space-y-6 mb-8">
                 <p className="text-lg text-gray-700 dark:text-gray-300">
-                  We&apos;ve received your strategy call booking request. We&apos;ll be in touch
-                  within 24 hours to confirm your preferred time and discuss how we can help you
-                  close more deals.
+                  We&apos;ve received your strategy call booking request for the{" "}
+                  <span className="font-semibold">
+                    {submittedData.preferredTime === "morning"
+                      ? "Morning (9 AM - 12 PM)"
+                      : submittedData.preferredTime === "afternoon"
+                        ? "Afternoon (12 PM - 5 PM)"
+                        : "Evening (5 PM - 8 PM)"}
+                  </span>{" "}
+                  time slot. We&apos;ll be in touch within 24 hours to confirm and discuss how we
+                  can help you close more deals.
                 </p>
 
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-6">
@@ -149,7 +167,7 @@ export default function BookPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   📧 We&apos;ve sent a confirmation to{" "}
                   <span className="font-mono font-medium">
-                    {sanitizeString(formData.email, 255)}
+                    {sanitizeString(submittedData.email, 255)}
                   </span>
                 </p>
               </div>
