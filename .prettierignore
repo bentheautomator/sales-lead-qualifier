@@ -1,0 +1,11 @@
+node_modules
+.next
+coverage
+dist
+.git
+.vscode
+.idea
+*.lock
+*.tsbuildinfo
+__tests__
+*.log
