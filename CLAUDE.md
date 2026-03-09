@@ -38,16 +38,15 @@ Each BANT dimension has weighted questions with point values (0-100 per option).
 
 - Uses React state to track answers across form steps
 - Collects user responses for Budget, Authority, Need, Timeline
-- On submit: calculates score and redirects to `/result?score=X&budget=Y&...`
-- No server calls
+- On submit: POSTs answers to `/api/score`, which validates, scores server-side, sets a signed HttpOnly cookie, and redirects to `/result`
 
 ### Result Page
 
 **`src/app/result/page.tsx`** — Shows qualification outcome.
 
-- Reads score and dimension scores from URL params
+- Fetches score from `/api/result` (reads signed HttpOnly cookie server-side)
 - Shows pass/fail messaging with CTA
-- No database queries
+- No database queries — score data lives in HMAC-signed cookie
 
 ### Components
 
@@ -58,27 +57,29 @@ Each BANT dimension has weighted questions with point values (0-100 per option).
 
 ## Key Design Decisions
 
-1. **All scoring runs client-side** — No backend dependencies for MVP. Scoring is deterministic and instant.
-2. **Score results passed via URL params** — Stateless result page. Easy to share/bookmark qualified leads.
-3. **Config file is the API** — Product team can tweak thresholds without touching code. Version control captures changes.
-4. **BANT framework** — Budget (30%), Authority (25%), Need (30%), Timeline (15%). Weights sum to 100%.
-5. **Single-question-per-step UX** — Reduces cognitive load. Users understand exactly what we're asking.
+1. **Server-side scoring with signed cookies** — Answers are POST'd to `/api/score`, scored server-side, and results stored in an HMAC-signed HttpOnly cookie. No sensitive data in URLs.
+2. **Config file is the API** — Product team can tweak thresholds without touching code. Version control captures changes.
+3. **BANT framework** — Budget (30%), Authority (25%), Need (30%), Timeline (15%). Weights sum to 100%.
+4. **Single-question-per-step UX** — Reduces cognitive load. Users understand exactly what we're asking.
 
 ## Testing
 
 Jest + ts-jest configuration. Tests in `__tests__/`.
 
 **Run specific test:**
+
 ```bash
 npx jest __tests__/scoring.test.ts
 ```
 
 **Watch mode:**
+
 ```bash
 npm run test:watch
 ```
 
 Focus on:
+
 - Scoring logic (`scoring.test.ts`) — edge cases, boundary thresholds, weight calculations
 - Component rendering (`ProgressBar.test.tsx`, `QuestionCard.test.tsx`)
 - Config validation (if qualificationConfig changes, tests should catch invalid thresholds)
@@ -99,7 +100,8 @@ src/
 ├── config/
 │   └── qualification.ts    # BANT rules & thresholds
 ├── lib/
-│   └── scoring.ts          # Pure scoring function
+│   ├── scoring.ts          # Pure scoring function
+│   └── scoreToken.ts       # HMAC-signed score cookie tokens
 └── types/
     └── index.ts            # Shared TypeScript types
 __tests__/
@@ -113,4 +115,15 @@ __tests__/
 - Tailwind v4 syntax: `@import "tailwindcss"` in globals.css
 - No external API integrations in MVP
 - All form state local (React state, not Context API or Zustand)
-- Result URL is shareable but stateless
+- Result URL is clean — no query params. Score data verified server-side via signed cookie.
+- `SCORE_SIGNING_SECRET` env var required in production for HMAC signing
+
+## Security Rules
+
+**These rules are mandatory for all contributors and AI agents working in this repository.**
+
+1. **NEVER pass sensitive data via URL query parameters.** Scores, qualification status, user answers, and any business logic results must use server-side storage (signed cookies, sessions, or database). URL params are logged in browser history, server logs, analytics, and leaked via Referrer headers.
+2. **NEVER calculate scores or make qualification decisions client-side.** All scoring must go through `/api/score` server-side. Client-side scoring is trivially spoofable via browser DevTools.
+3. **Sign all server-set cookies with HMAC.** Use `src/lib/scoreToken.ts` pattern — payload + HMAC-SHA256 signature, verified before trust.
+4. **HttpOnly + SameSite on all cookies carrying business data.** No JavaScript access to score cookies.
+5. **Validate all inputs server-side.** Client-side validation is UX only — never trust it for security.
