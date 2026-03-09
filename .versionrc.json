@@ -1,0 +1,14 @@
+{
+  "types": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "chore", "section": "Maintenance" },
+    { "type": "docs", "section": "Documentation" },
+    { "type": "refactor", "section": "Refactoring" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "test", "section": "Tests" },
+    { "type": "ci", "hidden": true }
+  ],
+  "commitUrlFormat": "https://github.com/bentheautomator/sales-lead-qualifier/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/bentheautomator/sales-lead-qualifier/compare/{{previousTag}}...{{currentTag}}"
+}
