@@ -20,29 +20,32 @@ Target state: Clear positioning, pricing tier strategy, conversion funnel define
 ### Who Is the Customer?
 
 **Primary:** Sales teams at B2B SaaS companies (10-500 people)
+
 - Use Salesforce, HubSpot, Pipedrive
 - Want to disqualify poor fits early
 - Pay for better lead quality (not quantity)
 - Average sales rep productivity: $200K-500K ARR per rep
 
 **Secondary:** Sales enablement leaders
+
 - Want to improve rep efficiency
 - Building internal qualification frameworks
 - Measuring conversion metrics
 
 **Tertiary:** Recruitment/hiring teams
+
 - Can use BANT for candidate fit assessment
 - Smaller market, but replicable
 
 ### Competitive Landscape
 
-| Tool | Positioning | Price | Key Feature |
-|------|-----------|-------|-------------|
-| Clearbit | B2B data enrichment | $1K/mo+ | Company data + intent |
-| ZoomInfo | Contact database | $1K/mo+ | Massive B2B database |
-| LeadIQ | Prospecting platform | $500/mo+ | Real-time intent + outreach |
-| Apollo | All-in-one CRM | $500/mo+ | Email, dialing, CRM |
-| Our Tool | Pure qualification | $0/mo (free) or $99/mo (pro) | BANT scoring + AI insights |
+| Tool     | Positioning          | Price                        | Key Feature                 |
+| -------- | -------------------- | ---------------------------- | --------------------------- |
+| Clearbit | B2B data enrichment  | $1K/mo+                      | Company data + intent       |
+| ZoomInfo | Contact database     | $1K/mo+                      | Massive B2B database        |
+| LeadIQ   | Prospecting platform | $500/mo+                     | Real-time intent + outreach |
+| Apollo   | All-in-one CRM       | $500/mo+                     | Email, dialing, CRM         |
+| Our Tool | Pure qualification   | $0/mo (free) or $99/mo (pro) | BANT scoring + AI insights  |
 
 **Our niche:** Pure qualification + AI recommendations. Not a database. Not an outreach tool.
 
@@ -52,7 +55,7 @@ Target state: Clear positioning, pricing tier strategy, conversion funnel define
 
 ### Vision Statement
 
-*"The fastest way to identify qualified B2B leads before your sales team wastes time on poor fits."*
+_"The fastest way to identify qualified B2B leads before your sales team wastes time on poor fits."_
 
 ### Core Value Propositions
 
@@ -70,7 +73,7 @@ Target state: Clear positioning, pricing tier strategy, conversion funnel define
 
 ### Tagline
 
-*"Qualify smarter. Sell faster. Stop wasting time."*
+_"Qualify smarter. Sell faster. Stop wasting time."_
 
 ---
 
@@ -138,6 +141,7 @@ Team analytics dashboard.
 **Start with:** Freemium (Option A) + Usage-Based upsell
 
 **Rationale:**
+
 - Freemium removes friction → high signup volume
 - Viral coefficient: "You should try this BANT tool" spreads organically
 - Free tier pays for itself via:
@@ -147,6 +151,7 @@ Team analytics dashboard.
 - At scale (1000 customers), 30% convert to Pro → $30K/mo revenue
 
 **Pricing tiers matter because:**
+
 1. Free users = proof points, testimonials, word-of-mouth
 2. Pro users = revenue + data on pricing elasticity
 3. Enterprise = high-touch, custom deals, long-term relationships
@@ -156,7 +161,9 @@ Team analytics dashboard.
 ## 5. Customer Acquisition Strategy
 
 ### Channel 1: Organic Search (SEO)
+
 **Content targets:**
+
 - "How to qualify B2B leads" (1000 searches/mo)
 - "BANT framework for sales" (500 searches/mo)
 - "Lead qualification best practices" (2000 searches/mo)
@@ -166,7 +173,9 @@ Team analytics dashboard.
 **Expected:** 1-2% conversion to free signup, 10-20% free → paid
 
 ### Channel 2: Sales Communities
+
 **Where to show up:**
+
 - Product Hunt (launch day: 500-2000 upvotes possible)
 - IndieHackers (inbound from founders)
 - SalesHacker, HubSpot Community (where sales leaders hang out)
@@ -176,23 +185,30 @@ Team analytics dashboard.
 **Expected:** 50-200 signups per mention
 
 ### Channel 3: CRM App Marketplaces
+
 **HubSpot App Marketplace:**
+
 - List free app: "BANT Qualifier"
 - CRM users = built-in audience
 - Commission: If monetizing, HubSpot takes 20%
 
 **Salesforce AppExchange:**
+
 - Smaller audience but high-intent buyers
 - More enterprise deals
 
 ### Channel 4: Influencer / Thought Leader
+
 **Partnerships:**
+
 - Reach out to sales influencers on LinkedIn
 - "Check out this BANT tool our team built"
 - Affiliate commission if they refer customers
 
 ### Channel 5: Sales Communities Content Marketing
+
 **CEO to CFO pitch:**
+
 - "Reduce customer acquisition cost by 30% with better qualification"
 - Webinar: "The Real Cost of Unqualified Leads"
 - Case study: Before/after (internal data or beta customer)
@@ -204,33 +220,39 @@ Team analytics dashboard.
 ### Onboarding Flow
 
 **Day 1:** "Your first BANT assessment"
+
 - 5-min form walkthrough
 - Show sample score
 - Explain what scores mean
 
 **Day 7:** "Did you know about AI insights?"
+
 - Email: "Here's what AI recommends for leads with Authority <50%"
 - Encourage API setup
 
 **Day 30:** "Time to upgrade?"
+
 - Show: "You've qualified 60 leads (plan limit: 20)"
 - Upsell: "Get unlimited + AI insights for $99/mo"
 
 ### Metrics to Track
 
 **User Health:**
+
 - Weekly active assessments
 - Free → Pro conversion rate
 - Feature adoption (API usage, AI insights clicks)
 - Time to first qualified lead
 
 **Business Health:**
+
 - CAC (Customer Acquisition Cost)
 - LTV (Lifetime Value)
 - Churn rate (Pro customers)
 - MRR (Monthly Recurring Revenue)
 
 **Target metrics for healthy SaaS:**
+
 - LTV/CAC ratio: >3x
 - Annual churn: <5% (Pro tier)
 - Magic number: >0.75
@@ -242,17 +264,20 @@ Team analytics dashboard.
 ### Why We Win Against:
 
 **Generic AI scoring tools:**
+
 - Better UX (form is delightful, not tedious)
 - BANT-specific (not generic ranking)
 - Integrations ready (Zapier, APIs)
 - Cheaper ($0-99 vs. $500+)
 
 **CRM native qualification:**
+
 - CRM-agnostic (HubSpot, Salesforce, Pipedrive, etc.)
 - Works before CRM (pre-lead entry)
 - Portable (export insights, share with team)
 
 **Spreadsheet + manual BANT:**
+
 - 10x faster (form vs. email back-and-forth)
 - Consistent (config-driven, not ad-hoc)
 - AI-powered (humans miss patterns)
@@ -269,27 +294,32 @@ Team analytics dashboard.
 ## 8. Go-to-Market Timeline
 
 ### Month 1: Foundation
+
 - Build free tier (Phase 1-3: visual polish, security)
 - Soft launch in ProductHunt prep communities
 - Get 5-10 beta customers (friends, advisors)
 
 ### Month 2: Launch
+
 - ProductHunt launch (targeting #1 product of the day)
 - Twitter/LinkedIn thread: "We built a BANT qualifier in 2 weeks"
 - 500-1000 signups expected
 
 ### Month 3: Traction
+
 - First case study: "How X reduced disqualified leads by 40%"
 - Webinar: "BANT framework for PLGs and B2B SaaS"
 - HubSpot app marketplace listing
 - Free tier showing strong viral signs
 
 ### Month 4: Monetize
+
 - Announce Pro tier pricing
 - First customer interviews for pricing feedback
 - Adjust based on feedback
 
 ### Month 5-6: Scale
+
 - Sales integration support (HubSpot/Salesforce specialists)
 - Enterprise outreach (targeting 10-50 person sales teams)
 - Hire first customer success person
@@ -299,12 +329,14 @@ Team analytics dashboard.
 ## 9. Financial Projections (Conservative)
 
 ### Year 1 Assumptions
+
 - 2000 free signups (via ProductHunt + organic)
 - 10% free → paid conversion (200 customers)
 - Average Pro tier: $99/mo
 - Enterprise deals: 5 @ $500/mo = $2500/mo
 
 **Revenue:**
+
 - Month 1-2: $0 (free only)
 - Month 3-4: $500 (5-10 early adopters)
 - Month 5-6: $2K/mo
@@ -313,6 +345,7 @@ Team analytics dashboard.
 **Year 1 Total:** ~$30K MRR by end of year
 
 **Costs:**
+
 - Cloud infrastructure: $500/mo
 - Staff (1 part-time engineer + founder): $50K/year salary
 - CRM integrations: $200/mo
@@ -321,6 +354,7 @@ Team analytics dashboard.
 **Profitability:** Break even Month 6-8, $20K+ profit by end of year
 
 ### Year 2 Projections
+
 - Free base grows to 5000 users
 - Free → paid improves to 15% (750 customers)
 - Enterprise pipeline: 20-30 customers
@@ -332,7 +366,9 @@ Team analytics dashboard.
 ## 10. Call-to-Action Strategy
 
 ### For Free Tier Users
+
 **CTA on result page:**
+
 ```
 You scored 73 on our BANT assessment. Ready to book a call?
 [Book a 30-min Strategy Call] or [Download the BANT Framework]
@@ -341,7 +377,9 @@ You scored 73 on our BANT assessment. Ready to book a call?
 **Why:** Drive to sales conversation for qualified leads.
 
 ### For Pro Tier Users
+
 **CTA on dashboard:**
+
 ```
 5 of your qualified leads have Authority <50%.
 Get AI insights: [What to ask these leads next]
@@ -350,7 +388,9 @@ Get AI insights: [What to ask these leads next]
 **Why:** Upsell value of AI insights.
 
 ### For Disqualified Leads
+
 **CTA on result page:**
+
 ```
 Your Authority score is weak (35%).
 [Download tips to find the right decision-maker] or [Explore other solutions]
@@ -363,40 +403,43 @@ Your Authority score is weak (35%).
 ## 11. Success Metrics & KPIs
 
 ### User Metrics
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Monthly signups | 100-200 | Free tier growth |
-| Free → Pro conversion | 10-15% | Revenue ÷ signup volume |
-| Active daily users | >30% of signups | Usage analytics |
-| Feature adoption | 60% use AI insights | Feature tracking |
+
+| Metric                | Target              | Measurement             |
+| --------------------- | ------------------- | ----------------------- |
+| Monthly signups       | 100-200             | Free tier growth        |
+| Free → Pro conversion | 10-15%              | Revenue ÷ signup volume |
+| Active daily users    | >30% of signups     | Usage analytics         |
+| Feature adoption      | 60% use AI insights | Feature tracking        |
 
 ### Business Metrics
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| MRR (Month 12) | $25K+ | Stripe revenue |
-| LTV/CAC ratio | >3x | LTV ÷ CAC |
-| Churn rate | <5% annual | (Customers lost) ÷ customers |
-| Net revenue retention | 110%+ | Expansion revenue |
+
+| Metric                | Target     | Measurement                  |
+| --------------------- | ---------- | ---------------------------- |
+| MRR (Month 12)        | $25K+      | Stripe revenue               |
+| LTV/CAC ratio         | >3x        | LTV ÷ CAC                    |
+| Churn rate            | <5% annual | (Customers lost) ÷ customers |
+| Net revenue retention | 110%+      | Expansion revenue            |
 
 ### Product Metrics
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Form completion rate | >70% | Assessments completed |
-| Time to result | <2 min | Page load + form time |
-| API uptime | 99.9% | Monitoring tools |
-| Support response time | <4 hours | Helpdesk SLA |
+
+| Metric                | Target   | Measurement           |
+| --------------------- | -------- | --------------------- |
+| Form completion rate  | >70%     | Assessments completed |
+| Time to result        | <2 min   | Page load + form time |
+| API uptime            | 99.9%    | Monitoring tools      |
+| Support response time | <4 hours | Helpdesk SLA          |
 
 ---
 
 ## 12. Risk Analysis & Mitigation
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|-----------|
-| CRMs add BANT natively | High | Medium | Differentiate on UX + AI insights |
-| Low enterprise demand | Medium | Medium | Start with SMBs, prove PLG model first |
-| Pricing wrong | Medium | High | Use freemium to validate before locked-in pricing |
-| Competitor launches similar | Medium | High | Launch fast, build moat via community |
-| User churn from free → paid | Medium | High | Offer free tier forever with value limit |
+| Risk                        | Impact | Probability | Mitigation                                        |
+| --------------------------- | ------ | ----------- | ------------------------------------------------- |
+| CRMs add BANT natively      | High   | Medium      | Differentiate on UX + AI insights                 |
+| Low enterprise demand       | Medium | Medium      | Start with SMBs, prove PLG model first            |
+| Pricing wrong               | Medium | High        | Use freemium to validate before locked-in pricing |
+| Competitor launches similar | Medium | High        | Launch fast, build moat via community             |
+| User churn from free → paid | Medium | High        | Offer free tier forever with value limit          |
 
 ---
 
@@ -437,18 +480,19 @@ Your Authority score is weak (35%).
 ## 14. Positioning Statement (For Marketing)
 
 **Hero tagline:**
-*"Stop wasting sales time on bad fits."*
+_"Stop wasting sales time on bad fits."_
 
 **Subheading:**
-*"Automatically qualify B2B leads using BANT before your sales team spends time on them. AI tells you what to ask next."*
+_"Automatically qualify B2B leads using BANT before your sales team spends time on them. AI tells you what to ask next."_
 
 **3-word value props:**
+
 - Qualify faster
 - Waste less
 - Sell smarter
 
 **One-liner for elevator pitch:**
-*"We're like a qualification gatekeeper for sales teams — the boring stuff happens automatically, AI tells you where to focus."*
+_"We're like a qualification gatekeeper for sales teams — the boring stuff happens automatically, AI tells you where to focus."_
 
 ---
 

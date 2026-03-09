@@ -11,18 +11,21 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 **The problem:** Claude API calls cost $. We need to decide where to call it.
 
 **Option A: Client-Side (JavaScript SDK)**
+
 - Pros: Simple, fast, no backend needed, user data stays on user's machine
 - Cons: API key exposed to client (leaked easily), costs unclear to users
 - Cost: ~$0.001 per insight, ~$100/mo at 10K leads
 - Complexity: Low (1 week)
 
 **Option B: Edge Function (Vercel Edge)**
+
 - Pros: API key hidden, server-side, global CDN edge, fast
 - Cons: Slightly more complex, requires environment variables
 - Cost: Same ~$0.001 per insight, plus Vercel Edge compute (~$0.50/10K calls)
 - Complexity: Medium (1.5 weeks)
 
 **Option C: Full Backend API (Node.js)**
+
 - Pros: Full control, can add auth/billing, most scalable
 - Cons: Requires database, more infrastructure, slower iteration
 - Cost: Same ~$0.001 per insight, plus database/server costs
@@ -39,6 +42,7 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 **The problem:** Do we store leads in a database or keep everything stateless (URL params only)?
 
 **Option A: Stateless MVP (Keep Current Approach)**
+
 - Results only in URL params (`/result?score=75&qualified=true&breakdown=...`)
 - No database needed
 - No lead history
@@ -47,6 +51,7 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 - Cons: Can't scale to business goals (APIs, CRM sync, analytics)
 
 **Option B: Add Postgres Database (Recommended)**
+
 - Store every qualified lead
 - Build webhooks, CRM integrations, lead export
 - Enable analytics ("How many qualified leads this week?")
@@ -66,12 +71,14 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 **The problem:** We need to know what to build into the UI/billing system.
 
 **Option A: Free Forever (No Monetization Yet)**
+
 - Launch free, figure out pricing later
 - Pros: No billing complexity, maximize growth, viral
 - Cons: Leaves money on table immediately
 - Best for: Testing product-market fit first
 
 **Option B: Freemium from Day 1**
+
 - Free: Unlimited assessments, basic score, no API
 - Pro: $99/mo, AI insights, API, integrations
 - Pros: Start revenue immediately, clear upsell path
@@ -79,6 +86,7 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 - Best for: Confident in value prop, want early revenue signals
 
 **Option C: Wait Until Month 3**
+
 - Launch free, build audience, then introduce Pro tier
 - Pros: Maximize free user acquisition first, reduces churn risk
 - Cons: Revenue delayed, billing system becomes retrofit
@@ -95,23 +103,28 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 **The problem:** "10,000% better" is vague. Which features are table stakes for launch?
 
 **Phase 1 (Weeks 1-2): Visual Wow + Core Functionality**
+
 - [ ] Animations and glassmorphic cards (sparkles) — YES
 - [ ] Dark mode toggle — YES
 - [ ] Canvas-based confetti on qualification — YES
 - [ ] Responsive mobile design — YES
 
 **Phase 2 (Weeks 2-3): AI Intelligence**
+
 - [ ] AI follow-up suggestions via Claude API — YES or defer?
 - [ ] Adaptive scoring based on company size — YES or defer?
 - [ ] Risk flag detection — YES or defer?
 
 **Phase 3 (Week 3): Security**
+
 - [ ] CSP headers, rate limiting, input validation — YES (non-negotiable)
 
 **Phase 4 (Week 4): Infrastructure**
+
 - [ ] Vercel Edge deployment, monitoring — YES (non-negotiable)
 
 **Phase 5 (Week 5): APIs**
+
 - [ ] Lead storage API — YES or defer?
 - [ ] Webhook infrastructure — YES or defer?
 - [ ] CSV export — YES or defer?
@@ -128,6 +141,7 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 **The problem:** Where and how do we tell the world about this?
 
 **Option A: ProductHunt Launch (High Risk, High Reward)**
+
 - Announce on day 1
 - Target: #1 product of the day (5000+ upvotes)
 - Pros: Huge visibility, potential viral growth, proves product quality
@@ -136,6 +150,7 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 - Expected: 500-2000 signups in 48 hours
 
 **Option B: Quiet Organic Launch (Low Risk, Steady Growth)**
+
 - Soft launch via your network, no press
 - HubSpot app marketplace, IndieHackers, Reddit, Twitter
 - Pros: Sustainable growth, less pressure, time to fix bugs
@@ -144,6 +159,7 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 - Expected: 50-200 signups in first week
 
 **Option C: Both (Phased)**
+
 - Soft launch Week 1 to friends + product communities
 - ProductHunt launch Week 2 after feedback & fixes
 - Pros: Best of both, lessons from soft launch inform ProductHunt
@@ -159,19 +175,23 @@ Everything below is ready to go. The crew is standing by. But we need you to ans
 ## The Bundle: What Gets Built (Depends on Answers Above)
 
 ### Definite Build (Non-Negotiable)
+
 - Visual overhaul (Phase 1) — **Required for "sparkles"**
 - Security hardening (Phase 3) — **Required for production**
 - Deployment infrastructure (Phase 4) — **Required for scaling**
 
 ### Conditional Build (Depends on Q1)
+
 - AI insights → **If budget for Claude API, build it**
 - Adaptive scoring → **If we want "intelligence" differentiator**
 - Risk detection → **If sales teams ask for it in beta**
 
 ### Conditional Build (Depends on Q2)
+
 - Database storage → **If we're monetizing (Phase 5 needs this)**
 
 ### Phase 2 Build (Never in MVP)
+
 - Zapier/CRM integrations → **Nice-to-have, not core**
 - Admin dashboard → **Phase 2 feature**
 - White-label option → **Phase 2 feature**
@@ -261,14 +281,14 @@ Notes/Constraints:
 
 ## Quick Reference: The Crew Stands Ready
 
-| Person | Role | Phase | Decision Gate |
-|--------|------|-------|---------------|
-| **The Alchemist** | Visual + AI | 1-2 | Q1, Q4 (AI scope) |
-| **The Architect** | Deployment + perf | 4 | None (go) |
-| **The Catalyst** | APIs + integrations | 5 | Q2 (database) |
-| **The Sentinel** | Security | 3 | None (go) |
-| **Lord Business** | Positioning + pricing | All | Q3, Q5 |
-| **Ben** | Coordination + blocking | All | All 5 Qs |
+| Person            | Role                    | Phase | Decision Gate     |
+| ----------------- | ----------------------- | ----- | ----------------- |
+| **The Alchemist** | Visual + AI             | 1-2   | Q1, Q4 (AI scope) |
+| **The Architect** | Deployment + perf       | 4     | None (go)         |
+| **The Catalyst**  | APIs + integrations     | 5     | Q2 (database)     |
+| **The Sentinel**  | Security                | 3     | None (go)         |
+| **Lord Business** | Positioning + pricing   | All   | Q3, Q5            |
+| **Ben**           | Coordination + blocking | All   | All 5 Qs          |
 
 ---
 

@@ -26,9 +26,11 @@ This plan coordinates The Automators' specialized expertise to elevate the quali
 ## Crew Assignments (Click to expand)
 
 ### 1. Visual & UX Excellence (The Alchemist Lead)
+
 **File:** `01-visual-ux-overhaul.md`
 
 Transform the boring form into a $50K SaaS landing page experience:
+
 - Sparkle animations (canvas-based particle effects)
 - Glassmorphism cards with backdrop blur
 - Gradient backgrounds with animated SVG accents
@@ -39,6 +41,7 @@ Transform the boring form into a $50K SaaS landing page experience:
 - Confetti/celebration effect on qualification
 
 **Key files to create/modify:**
+
 - `src/app/globals.css` — Tailwind v4 custom keyframes, animation library
 - `src/components/SparkleEffect.tsx` — Canvas-based particle emitter
 - `src/components/AnimatedGradient.tsx` — SVG background animations
@@ -47,6 +50,7 @@ Transform the boring form into a $50K SaaS landing page experience:
 - `src/app/result/page.tsx` — Celebration effects, better score visualization
 
 **Dependencies to add:**
+
 - `framer-motion` (v11+) for animation orchestration
 - `tailwindcss-animate` (built-in to Tailwind v4)
 - `lucide-react` for beautiful SVG icons
@@ -54,9 +58,11 @@ Transform the boring form into a $50K SaaS landing page experience:
 ---
 
 ### 2. AI-Powered Intelligence & Adaptive Scoring (The Alchemist)
+
 **File:** `02-ai-intelligence.md`
 
 Add smart, adaptive qualification logic:
+
 - **AI follow-up suggestions** — After submission, suggest talking points based on weak BANT areas
 - **Adaptive scoring** — Dynamically adjust weights based on industry/company size hints
 - **Risk scoring** — Identify red flags (low need + low budget = churn risk)
@@ -64,12 +70,14 @@ Add smart, adaptive qualification logic:
 - **Historical scoring** — Compare this lead to past qualified/disqualified patterns (if backend exists)
 
 **Architecture:**
+
 - Client-side prompt engineering (use Claude API in edge function or client)
 - Config-driven LLM prompts (extract from qualification.ts)
 - Stream responses to UI for real-time feel
 - Structured output via tool_use for consistent JSON
 
 **Key files to create/modify:**
+
 - `src/lib/ai-insights.ts` — Prompt engineering, formatting logic
 - `src/app/api/insights/route.ts` — Edge function (Vercel Edge) or API route for Claude API calls
 - `src/app/result/page.tsx` — Display AI suggestions panel
@@ -80,9 +88,11 @@ Add smart, adaptive qualification logic:
 ---
 
 ### 3. Security Hardening (The Sentinel)
+
 **File:** `03-security-lockdown.md`
 
 Production-grade security:
+
 - **CSP headers** (Content Security Policy) — Prevent XSS, script injection
 - **Input validation** — Sanitize form inputs, URL params (query string injection)
 - **Rate limiting** — Prevent form spam, API abuse (per IP or device fingerprint)
@@ -92,6 +102,7 @@ Production-grade security:
 - **Cookie security** — If tracking session state, HttpOnly + Secure flags
 
 **Key files to create/modify:**
+
 - `next.config.js` — Add security headers middleware
 - `src/middleware.ts` — Request validation, rate limiting check
 - `src/app/layout.tsx` — CSP meta tag
@@ -99,6 +110,7 @@ Production-grade security:
 - `src/lib/validation.ts` — Input schema validation (Zod)
 
 **Dependencies to add:**
+
 - `zod` (lightweight schema validation)
 - `dompurify` (HTML sanitization)
 - `rate-limit` or `Ratelimit` from `@vercel/edge-config` (edge-deployed rate limiting)
@@ -106,9 +118,11 @@ Production-grade security:
 ---
 
 ### 4. Architecture & Deployment (The Architect)
+
 **File:** `04-architecture-scale.md`
 
 Production-ready infrastructure:
+
 - **Edge deployment** (Vercel, Cloudflare) — Global CDN, instant cold starts
 - **Performance optimization** — Image optimization, font strategy, bundle analysis
 - **Error boundaries** — Graceful fallbacks, user-friendly error messages
@@ -117,6 +131,7 @@ Production-ready infrastructure:
 - **Database considerations** — If adding persistence (lead storage, historical data)
 
 **Key files to create/modify:**
+
 - `next.config.js` — Edge functions, image optimization, bundle analysis
 - `src/middleware.ts` — Global request/response transformation
 - `src/app/layout.tsx` — Script tags for analytics (Vercel Web Analytics, Sentry)
@@ -124,6 +139,7 @@ Production-ready infrastructure:
 - `vercel.json` (if needed) — Environment variables, deployment config
 
 **Infrastructure:**
+
 - Vercel Edge Functions for rate limiting + AI insights
 - Vercel KV for rate limiting state (if needed)
 - Sentry for error tracking
@@ -132,9 +148,11 @@ Production-ready infrastructure:
 ---
 
 ### 5. Integration Readiness (The Catalyst)
+
 **File:** `05-api-integrations.md`
 
 Prepare webhooks and CRM APIs:
+
 - **Webhook endpoints** — POST `/api/webhooks/qualified` with full lead data
 - **Zapier/Make.com templates** — Pre-built automation recipes
 - **CRM connectors** — HubSpot, Salesforce, Pipedrive SDK prep
@@ -143,6 +161,7 @@ Prepare webhooks and CRM APIs:
 - **Idempotency** — Prevent duplicate leads via request ID headers
 
 **Key files to create/modify:**
+
 - `src/app/api/leads/route.ts` — POST/GET for lead storage and retrieval
 - `src/app/api/webhooks/route.ts` — External system integration endpoints
 - `src/app/api/export/route.ts` — CSV/JSON export of leads
@@ -154,9 +173,11 @@ Prepare webhooks and CRM APIs:
 ---
 
 ### 6. Business & Positioning (Lord Business)
+
 **File:** `06-business-strategy.md`
 
 Validate commercial viability:
+
 - **Positioning** — Is this a freemium tool? White-label? Enterprise product?
 - **Pricing** — Usage-based? Seat-based? Per-qualified-lead? Free with optional AI insights?
 - **Conversion funnel** — Where does money enter? (Qualified CTA → demo booking → sales)
@@ -165,6 +186,7 @@ Validate commercial viability:
 - **Feature prioritization** — MVP features vs. Phase 2 nice-to-haves
 
 **Considerations:**
+
 - Free tier: Basic BANT form, no AI insights
 - Pro tier: AI follow-ups, historical comparison, custom thresholds
 - Enterprise: White-label, custom integrations, dedicated support
@@ -174,6 +196,7 @@ Validate commercial viability:
 ## Implementation Timeline
 
 ### Phase 1: Visual Wow (Days 1-2) — The Alchemist
+
 - Add Framer Motion, animate components
 - Sparkle effects, gradient backgrounds
 - Dark mode toggle
@@ -181,30 +204,35 @@ Validate commercial viability:
 - Button micro-interactions
 
 ### Phase 2: AI Intelligence (Days 2-3) — The Alchemist + Catalyst
+
 - Add Claude API calls for insights
 - Stream AI follow-ups to result page
 - Adaptive scoring logic
 - Risk flagging
 
 ### Phase 3: Security Lock (Day 3) — The Sentinel
+
 - CSP headers
 - Input validation (Zod)
 - Rate limiting middleware
 - Secure URL param sanitization
 
 ### Phase 4: Architecture & Monitoring (Day 4) — The Architect
+
 - Vercel Edge deployment
 - Sentry error tracking
 - Web Vitals monitoring
 - Performance optimization
 
 ### Phase 5: API & Webhooks (Days 4-5) — The Catalyst
+
 - Lead storage endpoint
 - Webhook infrastructure
 - Zapier integration template
 - CSV export
 
 ### Phase 6: Business Validation (Day 5) — Lord Business + Ben
+
 - Finalize positioning
 - Update CTAs based on business model
 - Create case study narrative

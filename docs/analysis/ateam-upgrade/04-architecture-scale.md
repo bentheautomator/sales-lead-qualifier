@@ -71,8 +71,8 @@ const nextConfig = {
   // Enable SWR caching for images
   images: {
     remotePatterns: [],
-    formats: ['image/avif', 'image/webp'],
-    cacheControl: 'public, max-age=31536000, immutable',
+    formats: ["image/avif", "image/webp"],
+    cacheControl: "public, max-age=31536000, immutable",
   },
 
   // Compression
@@ -82,24 +82,24 @@ const nextConfig = {
   headers: async () => {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           // CSP (from security section)
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.vercel-insights.com https://vitals.vercel-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.anthropic.com https://vitals.vercel-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`,
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains; preload",
           },
         ],
       },
@@ -110,8 +110,8 @@ const nextConfig = {
   redirects: async () => {
     return [
       {
-        source: '/old-url',
-        destination: '/',
+        source: "/old-url",
+        destination: "/",
         permanent: true,
       },
     ];
@@ -128,7 +128,7 @@ const nextConfig = {
 
   // Environment variables validation
   env: {
-    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4200',
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:4200",
   },
 
   // Experimental features
@@ -185,6 +185,7 @@ export default function RootLayout({
 ```
 
 **Install:**
+
 ```bash
 npm install @vercel/analytics @vercel/speed-insights
 ```
@@ -198,7 +199,7 @@ npm install @vercel/analytics @vercel/speed-insights
 **File:** `sentry.client.config.ts`
 
 ```typescript
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -220,19 +221,18 @@ Sentry.init({
 **File:** `sentry.server.config.ts`
 
 ```typescript
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  integrations: [
-    new Sentry.Prisma(),
-  ],
+  integrations: [new Sentry.Prisma()],
   tracesSampleRate: 1.0,
   environment: process.env.NODE_ENV,
 });
 ```
 
 **Install:**
+
 ```bash
 npm install @sentry/nextjs
 npx @sentry/wizard@latest -i nextjs
@@ -241,7 +241,7 @@ npx @sentry/wizard@latest -i nextjs
 **Usage in components:**
 
 ```typescript
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 try {
   // Code that might throw
@@ -251,6 +251,7 @@ try {
 ```
 
 **Environment variables:**
+
 ```
 NEXT_PUBLIC_SENTRY_DSN=https://key@sentry.io/project
 SENTRY_DSN=https://key@sentry.io/project
@@ -266,6 +267,7 @@ SENTRY_AUTH_TOKEN=token_for_release_tracking
 If adding lead persistence, use Neon (serverless Postgres):
 
 **Install:**
+
 ```bash
 npm install @prisma/client
 npm install -D prisma
@@ -333,6 +335,7 @@ model Session {
 ```
 
 **Migrations:**
+
 ```bash
 npx prisma migrate dev --name init
 ```
@@ -346,25 +349,21 @@ npx prisma migrate dev --name init
 **File:** `src/middleware.ts` (comprehensive)
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-const ALLOWED_HOSTS = [
-  'localhost:4200',
-  'localhost:3000',
-  'qualifier.example.com',
-];
+const ALLOWED_HOSTS = ["localhost:4200", "localhost:3000", "qualifier.example.com"];
 
 export function middleware(request: NextRequest) {
   const { pathname, hostname } = request.nextUrl;
 
   // Host validation (prevent host header attacks)
   if (!ALLOWED_HOSTS.includes(hostname)) {
-    return new NextResponse('Invalid host', { status: 403 });
+    return new NextResponse("Invalid host", { status: 403 });
   }
 
   // Rate limiting for API routes
-  if (pathname.startsWith('/api/')) {
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  if (pathname.startsWith("/api/")) {
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
     const key = `rate-limit:${ip}`;
 
     // TODO: Check rate limit from KV store
@@ -373,8 +372,8 @@ export function middleware(request: NextRequest) {
 
   // Add security headers
   const response = NextResponse.next();
-  response.headers.set('X-Request-ID', crypto.randomUUID());
-  response.headers.set('X-Forwarded-Proto', 'https');
+  response.headers.set("X-Request-ID", crypto.randomUUID());
+  response.headers.set("X-Forwarded-Proto", "https");
 
   return response;
 }
@@ -387,7 +386,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
 ```
@@ -455,14 +454,15 @@ npm install -D @next/bundle-analyzer
 **File:** `next.config.js` (add analyzer)
 
 ```javascript
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
 });
 
 module.exports = withBundleAnalyzer(nextConfig);
 ```
 
 **Run analysis:**
+
 ```bash
 ANALYZE=true npm run build
 ```
@@ -474,6 +474,7 @@ ANALYZE=true npm run build
 ## 9. Deployment Strategy
 
 **Staging environment (develop branch):**
+
 ```yaml
 # .github/workflows/deploy-staging.yml
 name: Deploy to Staging
@@ -497,6 +498,7 @@ jobs:
 ```
 
 **Production environment (main branch):**
+
 ```yaml
 # .github/workflows/deploy-prod.yml
 name: Deploy to Production
@@ -513,7 +515,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
       - run: npm ci && npm run test && npm run lint
 
   deploy:
@@ -537,11 +539,13 @@ jobs:
 ## 10. Monitoring & Alerting
 
 **Vercel Dashboard:**
+
 - Monitor deployments
 - View analytics
 - Set up alerts for errors, performance degradation
 
 **Sentry Dashboard:**
+
 - Error tracking
 - Performance monitoring
 - Session replays
@@ -568,15 +572,16 @@ export default function Dashboard() {
 
 ## Performance Targets
 
-| Metric | Target | Current | Action |
-|--------|--------|---------|--------|
-| LCP (Largest Contentful Paint) | <2.5s | TBD | Optimize fonts, images |
-| FID (First Input Delay) | <100ms | TBD | Code splitting |
-| CLS (Cumulative Layout Shift) | <0.1 | TBD | Fixed sizes on animations |
-| TTFB (Time to First Byte) | <200ms | TBD | Edge caching |
-| Bundle Size | <100KB (JS) | TBD | Tree-shaking, code splitting |
+| Metric                         | Target      | Current | Action                       |
+| ------------------------------ | ----------- | ------- | ---------------------------- |
+| LCP (Largest Contentful Paint) | <2.5s       | TBD     | Optimize fonts, images       |
+| FID (First Input Delay)        | <100ms      | TBD     | Code splitting               |
+| CLS (Cumulative Layout Shift)  | <0.1        | TBD     | Fixed sizes on animations    |
+| TTFB (Time to First Byte)      | <200ms      | TBD     | Edge caching                 |
+| Bundle Size                    | <100KB (JS) | TBD     | Tree-shaking, code splitting |
 
 **Monitoring:**
+
 - Run Lighthouse after each deploy
 - Track Core Web Vitals in production
 - Set up alerts for regressions
@@ -588,11 +593,13 @@ export default function Dashboard() {
 **Current:** Single Next.js app on Vercel.
 
 **Phase 2 (if needed):**
+
 - Add Neon Postgres database
 - Implement Redis caching layer (Vercel KV)
 - Set up CDN for static assets (included with Vercel)
 
 **Phase 3 (if needed):**
+
 - Separate frontend and API
 - GraphQL API layer
 - Dedicated monitoring infrastructure
@@ -602,17 +609,20 @@ export default function Dashboard() {
 ## Testing Deployment
 
 **Local:**
+
 ```bash
 npm run build
 npm start
 ```
 
 **Staging (Vercel):**
+
 - Deploy from develop branch
 - Run smoke tests against staging
 - Verify error tracking works
 
 **Production (Vercel):**
+
 - Require PR approvals
 - Run full test suite
 - Automated performance checks
@@ -631,6 +641,7 @@ vercel rollback
 ```
 
 **Automatic rollback triggers:**
+
 - Critical error rate threshold (>1%)
 - Performance regression (LCP >3.5s)
 - Unhandled exceptions

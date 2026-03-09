@@ -18,9 +18,11 @@ Target state: Premium product that makes prospects say "whoa" before they even s
 ## Component Breakdown
 
 ### 1. Global Styles & Animation Library
+
 **File:** `src/app/globals.css`
 
 **Changes:**
+
 ```css
 /* Tailwind v4 imports */
 @import "tailwindcss";
@@ -29,38 +31,71 @@ Target state: Premium product that makes prospects say "whoa" before they even s
 @layer utilities {
   /* Sparkle particle animation */
   @keyframes sparkle {
-    0% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-100px) scale(0); }
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-100px) scale(0);
+    }
   }
 
   /* Floating card entrance */
   @keyframes float-in {
-    0% { opacity: 0; transform: translateY(30px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Gradient shimmer */
   @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
   }
 
   /* Glow pulse (for active elements) */
   @keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-    50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.6); }
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+    }
   }
 
   /* Confetti burst (celebration) */
   @keyframes confetti-burst {
-    0% { opacity: 1; transform: translateY(0) rotateZ(0deg); }
-    100% { opacity: 0; transform: translateY(100px) rotateZ(360deg); }
+    0% {
+      opacity: 1;
+      transform: translateY(0) rotateZ(0deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(100px) rotateZ(360deg);
+    }
   }
 
   /* Smooth expand */
   @keyframes expand-smooth {
-    0% { max-height: 0; opacity: 0; }
-    100% { max-height: 500px; opacity: 1; }
+    0% {
+      max-height: 0;
+      opacity: 0;
+    }
+    100% {
+      max-height: 500px;
+      opacity: 1;
+    }
   }
 }
 
@@ -80,9 +115,15 @@ Target state: Premium product that makes prospects say "whoa" before they even s
   }
 
   @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 }
 
@@ -107,6 +148,7 @@ Target state: Premium product that makes prospects say "whoa" before they even s
 ---
 
 ### 2. Sparkle Effect Component
+
 **File:** `src/components/SparkleEffect.tsx`
 
 **What it does:** Canvas-based particle emitter that shoots sparkles across the screen on form completion.
@@ -220,6 +262,7 @@ export function SparkleEffect({
 ---
 
 ### 3. Animated Gradient Background
+
 **File:** `src/components/AnimatedGradient.tsx`
 
 **What it does:** SVG-based animated gradient that shifts colors subtly in the background.
@@ -308,9 +351,11 @@ export function AnimatedGradient() {
 ---
 
 ### 4. Enhanced Layout with Dark Mode
+
 **File:** `src/app/layout.tsx` (modifications)
 
 **Add:**
+
 ```typescript
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -356,9 +401,11 @@ export default function RootLayout({
 ---
 
 ### 5. Enhanced Main Form Page
+
 **File:** `src/app/page.tsx` (modifications)
 
 **Key enhancements:**
+
 ```typescript
 // Add at top
 import { SparkleEffect } from '@/components/SparkleEffect';
@@ -470,9 +517,11 @@ return (
 ---
 
 ### 6. Result Page with Celebration
+
 **File:** `src/app/result/page.tsx` (modifications)
 
 **Key additions:**
+
 ```typescript
 // After qualified determination, trigger sparkles:
 useEffect(() => {
@@ -511,9 +560,11 @@ useEffect(() => {
 ---
 
 ### 7. Enhanced QuestionCard Component
+
 **File:** `src/components/QuestionCard.tsx` (modifications)
 
 **Key changes:**
+
 ```typescript
 // Add hover glow effect to option buttons:
 className={`p-4 text-left rounded-lg border-2 transition-all duration-200 cursor-pointer ${
@@ -536,6 +587,7 @@ onClick={() => {
 ## Dependencies to Add
 
 **package.json:**
+
 ```json
 {
   "dependencies": {
@@ -566,6 +618,7 @@ Note: Tailwind v4 includes animation utilities, so `tailwindcss-animate` is not 
 ## Accessibility Notes
 
 Add to globals.css:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   * {

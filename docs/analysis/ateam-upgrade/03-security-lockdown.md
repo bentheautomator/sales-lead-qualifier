@@ -32,10 +32,10 @@ const nextConfig = {
   headers: async () => {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.vercel-insights.com https://vitals.vercel-analytics.com;
@@ -46,31 +46,31 @@ const nextConfig = {
               frame-ancestors 'none';
               base-uri 'self';
               form-action 'self';
-            `.replace(/\s+/g, ' '),
+            `.replace(/\s+/g, " "),
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           {
-            key: 'Permissions-Policy',
-            value: 'geolocation=(), microphone=(), camera=()',
+            key: "Permissions-Policy",
+            value: "geolocation=(), microphone=(), camera=()",
           },
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
           },
         ],
       },
@@ -92,26 +92,26 @@ module.exports = nextConfig;
 **File:** `src/lib/validation.ts`
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Validation schemas for BANT answers
 export const BantAnswerSchema = z.record(
   z.string().min(1).max(100), // Question ID
-  z.string().min(1).max(100) // Answer value
+  z.string().min(1).max(100), // Answer value
 );
 
 // Validate search params from URL
 export const ResultQuerySchema = z.object({
   score: z.string().pipe(z.coerce.number().min(0).max(100)),
-  qualified: z.string().transform((v) => v === 'true'),
+  qualified: z.string().transform((v) => v === "true"),
   breakdown: z.string().pipe(
     z.string().transform((json) => {
       try {
         return JSON.parse(decodeURIComponent(json));
       } catch {
-        throw new Error('Invalid breakdown JSON');
+        throw new Error("Invalid breakdown JSON");
       }
-    })
+    }),
   ),
 });
 
@@ -120,32 +120,30 @@ export function sanitizeInput(input: string): string {
   return input
     .trim()
     .slice(0, 500) // Max length
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, ''); // Remove javascript: protocol
+    .replace(/[<>]/g, "") // Remove angle brackets
+    .replace(/javascript:/gi, ""); // Remove javascript: protocol
 }
 
 // Validate and sanitize answer
 export function validateAnswer(
   questionId: string,
-  value: string
+  value: string,
 ): { valid: boolean; sanitized: string; error?: string } {
   try {
     const sanitized = sanitizeInput(value);
 
     // Check against allowed values (should come from config)
     if (sanitized.length === 0) {
-      return { valid: false, sanitized: '', error: 'Empty answer' };
+      return { valid: false, sanitized: "", error: "Empty answer" };
     }
 
     return { valid: true, sanitized };
   } catch (error) {
-    return { valid: false, sanitized: '', error: String(error) };
+    return { valid: false, sanitized: "", error: String(error) };
   }
 }
 
-export function validateResultQuery(
-  query: Record<string, string | string[] | undefined>
-) {
+export function validateResultQuery(query: Record<string, string | string[] | undefined>) {
   return ResultQuerySchema.safeParse(query);
 }
 ```
@@ -153,10 +151,10 @@ export function validateResultQuery(
 **Usage in result page:**
 
 ```typescript
-'use client';
+"use client";
 
-import { validateResultQuery } from '@/lib/validation';
-import { useSearchParams } from 'next/navigation';
+import { validateResultQuery } from "@/lib/validation";
+import { useSearchParams } from "next/navigation";
 
 function ResultContent() {
   const searchParams = useSearchParams();
@@ -167,7 +165,7 @@ function ResultContent() {
 
   if (!validation.success) {
     // Invalid query params — redirect to home
-    router.push('/');
+    router.push("/");
     return null;
   }
 
@@ -187,14 +185,14 @@ function ResultContent() {
 **File:** `src/lib/sanitize.ts`
 
 ```typescript
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 
 /**
  * Sanitize HTML content to prevent XSS
  * Only use when displaying user-provided HTML content
  */
 export function sanitizeHtml(dirty: string): string {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Server-side: use a simple approach
     return escapeHtml(dirty);
   }
@@ -212,11 +210,11 @@ export function sanitizeHtml(dirty: string): string {
  */
 export function escapeHtml(unsafe: string): string {
   return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 /**
@@ -226,12 +224,13 @@ export function safeJsonStringify(obj: unknown): string {
   try {
     return JSON.stringify(obj);
   } catch (error) {
-    return '{}';
+    return "{}";
   }
 }
 ```
 
 **Install DOMPurify:**
+
 ```bash
 npm install dompurify
 npm install -D @types/dompurify
@@ -259,7 +258,7 @@ import { sanitizeHtml } from '@/lib/sanitize';
 **File:** `src/middleware.ts`
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
 const RATE_LIMIT_REQUESTS = 10; // Max 10 form submissions per hour
@@ -267,9 +266,9 @@ const RATE_LIMIT_MAP = new Map<string, { count: number; resetTime: number }>();
 
 function getClientIp(request: NextRequest): string {
   return (
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
   );
 }
 
@@ -293,11 +292,11 @@ function isRateLimited(ip: string): boolean {
 
 export function middleware(request: NextRequest) {
   // Apply rate limiting to form submission endpoints
-  if (request.nextUrl.pathname === '/api/insights') {
+  if (request.nextUrl.pathname === "/api/insights") {
     const clientIp = getClientIp(request);
 
     if (isRateLimited(clientIp)) {
-      return new NextResponse('Too many requests', { status: 429 });
+      return new NextResponse("Too many requests", { status: 429 });
     }
   }
 
@@ -305,7 +304,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/result'],
+  matcher: ["/api/:path*", "/result"],
 };
 ```
 
@@ -315,21 +314,21 @@ For production, use Vercel's KV + Edge Config for distributed rate limiting:
 
 ```typescript
 // src/app/api/insights/route.ts (improved)
-import { Ratelimit } from '@vercel/edge-config';
+import { Ratelimit } from "@vercel/edge-config";
 
 const ratelimit = new Ratelimit({
-  key: 'insights-api',
+  key: "insights-api",
   limit: 5, // 5 requests
-  window: '1h', // per hour
+  window: "1h", // per hour
   analytics: true,
 });
 
 export async function POST(request: Request) {
-  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
   const { success } = await ratelimit.limit(ip);
 
   if (!success) {
-    return new Response('Rate limited', { status: 429 });
+    return new Response("Rate limited", { status: 429 });
   }
 
   // ... process request
@@ -347,14 +346,14 @@ export async function POST(request: Request) {
 **File:** `src/lib/csrf.ts`
 
 ```typescript
-import crypto from 'crypto';
+import crypto from "crypto";
 
 /**
  * Generate CSRF token
  * Store in session/cookie
  */
 export function generateCsrfToken(): string {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }
 
 /**
@@ -370,20 +369,20 @@ export function verifyCsrfToken(token: string, sessionToken: string): boolean {
 
 ```typescript
 // In form component
-const [csrfToken, setCsrfToken] = useState('');
+const [csrfToken, setCsrfToken] = useState("");
 
 useEffect(() => {
   // Fetch CSRF token on mount
-  fetch('/api/csrf-token')
+  fetch("/api/csrf-token")
     .then((r) => r.json())
     .then((d) => setCsrfToken(d.token));
 }, []);
 
 // Include in form submission:
 const handleSubmit = async () => {
-  await fetch('/api/leads', {
-    method: 'POST',
-    headers: { 'X-CSRF-Token': csrfToken },
+  await fetch("/api/leads", {
+    method: "POST",
+    headers: { "X-CSRF-Token": csrfToken },
     body: JSON.stringify(formData),
   });
 };
@@ -408,19 +407,23 @@ export function isSafeRedirect(url: string): boolean {
     const parsed = new URL(url);
 
     // Only allow same-origin redirects
-    if (parsed.origin !== typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL) {
+    if (
+      (parsed.origin !== typeof window) !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_BASE_URL
+    ) {
       return false;
     }
 
     // Whitelist allowed paths
-    const allowedPaths = ['/result', '/book', '/guide', '/'];
+    const allowedPaths = ["/result", "/book", "/guide", "/"];
     return allowedPaths.some((path) => parsed.pathname.startsWith(path));
   } catch {
     return false;
   }
 }
 
-export function safeRedirect(router: any, url: string, fallback = '/') {
+export function safeRedirect(router: any, url: string, fallback = "/") {
   if (isSafeRedirect(url)) {
     router.push(url);
   } else {
@@ -476,7 +479,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
       - run: npm ci
       - run: npm audit --audit-level=moderate
 ```
@@ -505,6 +508,7 @@ NEXT_PUBLIC_BASE_URL=https://qualifier.example.com
 ```
 
 **.gitignore:**
+
 ```
 .env.local
 .env.*.local
@@ -519,19 +523,16 @@ NEXT_PUBLIC_BASE_URL=https://qualifier.example.com
 **File:** `src/lib/monitoring.ts`
 
 ```typescript
-import { captureException } from '@sentry/nextjs';
+import { captureException } from "@sentry/nextjs";
 
 /**
  * Log security event
  */
-export function logSecurityEvent(
-  event: string,
-  details: Record<string, any>
-): void {
+export function logSecurityEvent(event: string, details: Record<string, any>): void {
   console.warn(`[SECURITY] ${event}`, details);
 
   // Send to monitoring service
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     // Server-side
     // TODO: Send to Sentry/DataDog/etc
   }
@@ -540,11 +541,8 @@ export function logSecurityEvent(
 /**
  * Report validation error
  */
-export function reportValidationError(
-  error: string,
-  context: Record<string, any>
-): void {
-  logSecurityEvent('validation_error', { error, context });
+export function reportValidationError(error: string, context: Record<string, any>): void {
+  logSecurityEvent("validation_error", { error, context });
 
   // Don't expose internal error details to user
   // Show generic message instead
@@ -554,7 +552,7 @@ export function reportValidationError(
  * Report rate limit hit
  */
 export function reportRateLimitHit(ip: string, endpoint: string): void {
-  logSecurityEvent('rate_limit_exceeded', { ip, endpoint });
+  logSecurityEvent("rate_limit_exceeded", { ip, endpoint });
 }
 ```
 
@@ -567,49 +565,49 @@ export function reportRateLimitHit(ip: string, endpoint: string): void {
 Create `__tests__/security.test.ts`:
 
 ```typescript
-import { sanitizeInput, validateResultQuery } from '@/lib/validation';
-import { sanitizeHtml } from '@/lib/sanitize';
+import { sanitizeInput, validateResultQuery } from "@/lib/validation";
+import { sanitizeHtml } from "@/lib/sanitize";
 
-describe('Security', () => {
-  describe('Input Validation', () => {
-    it('rejects XSS attempts in input', () => {
-      const malicious = '<img src=x onerror="alert(\'xss\')">';
+describe("Security", () => {
+  describe("Input Validation", () => {
+    it("rejects XSS attempts in input", () => {
+      const malicious = "<img src=x onerror=\"alert('xss')\">";
       const { valid } = sanitizeInput(malicious);
       expect(valid).toBe(false);
     });
 
-    it('removes angle brackets', () => {
-      const input = 'hello<script>alert</script>';
+    it("removes angle brackets", () => {
+      const input = "hello<script>alert</script>";
       const result = sanitizeInput(input);
-      expect(result).not.toContain('<');
+      expect(result).not.toContain("<");
     });
   });
 
-  describe('URL Parameter Validation', () => {
-    it('rejects invalid query params', () => {
-      const query = { score: 'not-a-number', qualified: 'maybe' };
+  describe("URL Parameter Validation", () => {
+    it("rejects invalid query params", () => {
+      const query = { score: "not-a-number", qualified: "maybe" };
       const result = validateResultQuery(query);
       expect(result.success).toBe(false);
     });
 
-    it('accepts valid query params', () => {
-      const query = { score: '75', qualified: 'true', breakdown: '{}' };
+    it("accepts valid query params", () => {
+      const query = { score: "75", qualified: "true", breakdown: "{}" };
       const result = validateResultQuery(query);
       expect(result.success).toBe(true);
     });
   });
 
-  describe('HTML Sanitization', () => {
-    it('removes script tags', () => {
-      const dirty = 'Hello <script>alert(1)</script> world';
+  describe("HTML Sanitization", () => {
+    it("removes script tags", () => {
+      const dirty = "Hello <script>alert(1)</script> world";
       const clean = sanitizeHtml(dirty);
-      expect(clean).not.toContain('<script>');
+      expect(clean).not.toContain("<script>");
     });
 
-    it('removes event handlers', () => {
+    it("removes event handlers", () => {
       const dirty = '<div onclick="alert(1)">Click</div>';
       const clean = sanitizeHtml(dirty);
-      expect(clean).not.toContain('onclick');
+      expect(clean).not.toContain("onclick");
     });
   });
 });

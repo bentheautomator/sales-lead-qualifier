@@ -37,6 +37,7 @@ An attacker can craft a malicious URL that injects JavaScript:
 While React's JSX mitigates simple inline XSS by default (it escapes content), if the dimension names or any part of the breakdown are used in event handlers or attribute values, there's a path to exploitation.
 
 **Impact:**
+
 - Cookie theft
 - Session hijacking
 - Keylogging
@@ -52,16 +53,18 @@ Query parameters from the URL are treated as trusted input without validation.
 ```typescript
 // src/app/result/page.tsx - UPDATED ResultContent function
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // Define strict validation schema
-const BreakdownSchema = z.record(
-  z.string().min(1).max(20), // dimension name: max 20 chars
-  z.number().min(0).max(100)  // percentage: 0-100
-).refine(
-  (breakdown) => Object.keys(breakdown).length <= 10,
-  "Breakdown cannot contain more than 10 dimensions"
-);
+const BreakdownSchema = z
+  .record(
+    z.string().min(1).max(20), // dimension name: max 20 chars
+    z.number().min(0).max(100), // percentage: 0-100
+  )
+  .refine(
+    (breakdown) => Object.keys(breakdown).length <= 10,
+    "Breakdown cannot contain more than 10 dimensions",
+  );
 
 function ResultContent() {
   const searchParams = useSearchParams();
@@ -123,6 +126,7 @@ function ResultContent() {
 ```
 
 **Installation:**
+
 ```bash
 npm install zod
 ```
@@ -221,27 +225,29 @@ function ResultContent() {
 
 ```typescript
 // __tests__/result-page.test.ts
-describe('Result page XSS protection', () => {
-  it('should reject invalid breakdown objects', () => {
+describe("Result page XSS protection", () => {
+  it("should reject invalid breakdown objects", () => {
     const malicious = {
-      "test<img>": "<script>alert('xss')</script>"
+      "test<img>": "<script>alert('xss')</script>",
     };
     expect(isValidBreakdown(malicious)).toBe(false);
   });
 
-  it('should reject breakdown with too many dimensions', () => {
+  it("should reject breakdown with too many dimensions", () => {
     const tooBig = Object.fromEntries(
-      Array(15).fill(0).map((_, i) => [`dim_${i}`, 50])
+      Array(15)
+        .fill(0)
+        .map((_, i) => [`dim_${i}`, 50]),
     );
     expect(isValidBreakdown(tooBig)).toBe(false);
   });
 
-  it('should reject invalid dimension names', () => {
+  it("should reject invalid dimension names", () => {
     const invalid = { "dimension<>": 50 };
     expect(isValidBreakdown(invalid)).toBe(false);
   });
 
-  it('should accept valid breakdown', () => {
+  it("should accept valid breakdown", () => {
     const valid = { budget: 80, authority: 75 };
     expect(isValidBreakdown(valid)).toBe(true);
   });
@@ -269,7 +275,7 @@ const router = useRouter();
 const params = new URLSearchParams({
   score: "100",
   qualified: "true",
-  breakdown: JSON.stringify({ budget: 100, authority: 100, need: 100, timeline: 100 })
+  breakdown: JSON.stringify({ budget: 100, authority: 100, need: 100, timeline: 100 }),
 });
 router.push(`/result?${params.toString()}`);
 ```
@@ -279,13 +285,14 @@ Or manipulate the answers object:
 ```javascript
 // In browser DevTools, modify React state
 window.__REACT_DEVTOOLS_GLOBAL_HOOK__.getFiber(document.body).child.memoizedState[1][0] = {
-  'budget-range': 'large',
-  'budget-approval': 'approved',
+  "budget-range": "large",
+  "budget-approval": "approved",
   // etc...
 };
 ```
 
 **Impact:**
+
 - Unqualified leads reporting themselves as qualified
 - Leads with no budget claiming they have $100K+
 - Completely bypasses business qualification logic
@@ -299,9 +306,9 @@ Scoring happens entirely on the client with no server-side validation or re-calc
 ```typescript
 // src/app/api/validate-score/route.ts (NEW FILE)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { calculateScore } from '@/lib/scoring';
-import { qualificationConfig } from '@/config/qualification';
+import { NextRequest, NextResponse } from "next/server";
+import { calculateScore } from "@/lib/scoring";
+import { qualificationConfig } from "@/config/qualification";
 
 interface ValidateScoreRequest {
   answers: Record<string, string>;
@@ -313,11 +320,8 @@ export async function POST(request: NextRequest) {
   try {
     const body: ValidateScoreRequest = await request.json();
 
-    if (!body.answers || typeof body.clientScore !== 'number') {
-      return NextResponse.json(
-        { error: 'Invalid request' },
-        { status: 400 }
-      );
+    if (!body.answers || typeof body.clientScore !== "number") {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
     // Recalculate score on server
@@ -331,10 +335,10 @@ export async function POST(request: NextRequest) {
       // Score was tampered with
       return NextResponse.json(
         {
-          error: 'Score validation failed',
-          action: 'redirect', // Client should redirect to /
+          error: "Score validation failed",
+          action: "redirect", // Client should redirect to /
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -353,39 +357,32 @@ export async function POST(request: NextRequest) {
       serverQualified: serverResult.qualified,
     });
   } catch (error) {
-    console.error('Score validation error:', error);
-    return NextResponse.json(
-      { error: 'Server error' },
-      { status: 500 }
-    );
+    console.error("Score validation error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
 // Simple HMAC-based token signing (use a proper JWT library in production)
 async function signScoreToken(data: any): Promise<string> {
-  const secret = process.env.SCORE_SIGNING_SECRET || 'dev-secret';
+  const secret = process.env.SCORE_SIGNING_SECRET || "dev-secret";
   const message = JSON.stringify(data);
 
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['sign']
+    ["sign"],
   );
 
-  const signature = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    encoder.encode(message)
-  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(message));
 
   const signatureHex = Array.from(new Uint8Array(signature))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 
-  return `${Buffer.from(message).toString('base64')}.${signatureHex}`;
+  return `${Buffer.from(message).toString("base64")}.${signatureHex}`;
 }
 ```
 
@@ -399,9 +396,9 @@ const handleSubmit = useCallback(async () => {
     const scoreResult = calculateScore(answers, qualificationConfig);
 
     // Validate score on server before redirecting
-    const validationResponse = await fetch('/api/validate-score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const validationResponse = await fetch("/api/validate-score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         answers,
         clientScore: scoreResult.totalScore,
@@ -411,7 +408,7 @@ const handleSubmit = useCallback(async () => {
 
     if (!validationResponse.ok) {
       // Score validation failed - redirect to home
-      router.push('/');
+      router.push("/");
       setIsSubmitting(false);
       return;
     }
@@ -434,7 +431,7 @@ const handleSubmit = useCallback(async () => {
 
     router.push(`/result?${params.toString()}`);
   } catch (error) {
-    console.error('Error calculating score:', error);
+    console.error("Error calculating score:", error);
     setIsSubmitting(false);
   }
 }, [answers, router]);
@@ -457,6 +454,7 @@ SCORE_SIGNING_SECRET=your-secret-key-here-at-least-32-chars
 
 **Description:**
 No Content-Security-Policy header is configured. This allows:
+
 - Inline script injection
 - External script loading from any source
 - Unsafe iframe embedding
@@ -472,10 +470,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   headers: async () => [
     {
-      source: '/:path*',
+      source: "/:path*",
       headers: [
         {
-          key: 'Content-Security-Policy',
+          key: "Content-Security-Policy",
           value: [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires these for dev
@@ -486,27 +484,27 @@ const nextConfig: NextConfig = {
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",
-          ].join('; '),
+          ].join("; "),
         },
         {
-          key: 'X-Content-Type-Options',
-          value: 'nosniff',
+          key: "X-Content-Type-Options",
+          value: "nosniff",
         },
         {
-          key: 'X-Frame-Options',
-          value: 'DENY',
+          key: "X-Frame-Options",
+          value: "DENY",
         },
         {
-          key: 'X-XSS-Protection',
-          value: '1; mode=block',
+          key: "X-XSS-Protection",
+          value: "1; mode=block",
         },
         {
-          key: 'Referrer-Policy',
-          value: 'strict-origin-when-cross-origin',
+          key: "Referrer-Policy",
+          value: "strict-origin-when-cross-origin",
         },
         {
-          key: 'Permissions-Policy',
-          value: 'camera=(), microphone=(), geolocation=()',
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
         },
       ],
     },
@@ -550,6 +548,7 @@ The qualification threshold (70 points) is hardcoded in client-side code and vis
 While this may be intentional for transparency, it's a business logic disclosure that allows sophisticated users to game the system.
 
 **Impact:**
+
 - Users know the exact scoring formula
 - Users know the exact threshold
 - Allows manipulation of qualification assessment
@@ -560,12 +559,7 @@ While this may be intentional for transparency, it's a business logic disclosure
 ```typescript
 // src/config/qualification.ts - UPDATED
 
-import type {
-  Question,
-  Dimension,
-  Outcome,
-  QualificationConfig,
-} from "@/types";
+import type { Question, Dimension, Outcome, QualificationConfig } from "@/types";
 
 // Move threshold to server-only config
 export const qualificationConfig: QualificationConfig = {
@@ -584,10 +578,7 @@ export const qualificationConfig: QualificationConfig = {
 export const qualificationThreshold = 70; // Only loaded server-side
 
 // Or use environment variable
-export const qualificationThreshold = parseInt(
-  process.env.QUALIFICATION_THRESHOLD || '70',
-  10
-);
+export const qualificationThreshold = parseInt(process.env.QUALIFICATION_THRESHOLD || "70", 10);
 ```
 
 ```bash
@@ -651,10 +642,7 @@ This won't currently break anything, but it's a resource consumption vector.
 import type { QualificationConfig, ScoreResult, DimensionScore } from "@/types";
 
 // Add validation function
-function isValidAnswers(
-  answers: Record<string, string>,
-  config: QualificationConfig
-): boolean {
+function isValidAnswers(answers: Record<string, string>, config: QualificationConfig): boolean {
   // Check for suspicious keys
   for (const key of Object.keys(answers)) {
     // Max 100 chars per key (question IDs)
@@ -666,7 +654,7 @@ function isValidAnswers(
 
   // Check values are present
   for (const value of Object.values(answers)) {
-    if (typeof value !== 'string' || value.length > 50) return false;
+    if (typeof value !== "string" || value.length > 50) return false;
   }
 
   return true;
@@ -674,11 +662,11 @@ function isValidAnswers(
 
 export function calculateScore(
   answers: Record<string, string>,
-  config: QualificationConfig
+  config: QualificationConfig,
 ): ScoreResult {
   // Validate input
   if (!isValidAnswers(answers, config)) {
-    throw new Error('Invalid answers format');
+    throw new Error("Invalid answers format");
   }
 
   // ... rest of function unchanged
@@ -721,6 +709,7 @@ try {
 **Result:** `found 0 vulnerabilities`
 
 **Checked Packages:**
+
 - next@16.1.6 (Current)
 - react@19.2.4 (Current)
 - react-dom@19.2.4 (Current)
@@ -734,15 +723,15 @@ try {
 
 ## Summary of Fixes by Priority
 
-| Severity | Issue | Fix Time | Risk if Not Fixed |
-|----------|-------|----------|-------------------|
-| CRITICAL | XSS via URL params | 2 hours | Account takeover, data theft |
-| CRITICAL | Client-side scoring | 4 hours | Business logic bypass, false qualifications |
-| HIGH | Missing CSP header | 1 hour | Script injection, malware |
-| HIGH | Threshold disclosure | 1 hour | Qualified lead manipulation |
-| MEDIUM | HTTPS enforcement | 15 min | Man-in-the-middle attacks |
-| MEDIUM | Input validation | 1 hour | Resource exhaustion |
-| LOW | Error disclosure | 15 min | Information leakage |
+| Severity | Issue                | Fix Time | Risk if Not Fixed                           |
+| -------- | -------------------- | -------- | ------------------------------------------- |
+| CRITICAL | XSS via URL params   | 2 hours  | Account takeover, data theft                |
+| CRITICAL | Client-side scoring  | 4 hours  | Business logic bypass, false qualifications |
+| HIGH     | Missing CSP header   | 1 hour   | Script injection, malware                   |
+| HIGH     | Threshold disclosure | 1 hour   | Qualified lead manipulation                 |
+| MEDIUM   | HTTPS enforcement    | 15 min   | Man-in-the-middle attacks                   |
+| MEDIUM   | Input validation     | 1 hour   | Resource exhaustion                         |
+| LOW      | Error disclosure     | 15 min   | Information leakage                         |
 
 **Total Estimated Fix Time:** 9 hours 15 minutes
 
@@ -751,6 +740,7 @@ try {
 ## Implementation Checklist
 
 ### Phase 1: Critical Fixes (Do First)
+
 - [ ] Add URL parameter validation to `/result` page
 - [ ] Create `/api/validate-score` endpoint with server-side recalculation
 - [ ] Update submit handler to call validation endpoint
@@ -758,16 +748,19 @@ try {
 - [ ] Test score manipulation attempts
 
 ### Phase 2: High-Priority Fixes (Deploy With Phase 1)
+
 - [ ] Add CSP headers to `next.config.ts`
 - [ ] Move threshold to environment variable
 - [ ] Test CSP doesn't break styling or fonts
 
 ### Phase 3: Medium-Priority Fixes (Next Sprint)
+
 - [ ] Add HTTPS enforcement header
 - [ ] Validate form input before scoring
 - [ ] Set up Sentry/error logging to track tampering attempts
 
 ### Phase 4: Hardening (Optional But Recommended)
+
 - [ ] Add rate limiting to `/api/validate-score`
 - [ ] Log suspicious qualification submissions
 - [ ] Add CAPTCHA to form submission

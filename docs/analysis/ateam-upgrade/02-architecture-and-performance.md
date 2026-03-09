@@ -13,12 +13,14 @@ The Sales Lead Qualifier is a lean, well-structured Next.js 16 application with 
 ### Bundle Size & Code Splitting
 
 **Current State: GOOD**
+
 - Minimal dependencies: Next.js, React, React-DOM, Tailwind CSS only
 - No heavy third-party libraries (no lodash, moment.js, axios)
 - Server components automatically code-split in Next.js 16
 - CSS is scoped to components via Tailwind
 
 **Opportunities:**
+
 1. **No explicit output analysis** — no `next/bundle-analyzer` configured
 2. **Qualification config** is inlined in TypeScript — consider lazy-loading if it grows beyond current ~240 lines
 3. **SVG icons** embedded inline — good (no extra HTTP requests) but could be extracted to `<Icon>` component for reuse
@@ -26,6 +28,7 @@ The Sales Lead Qualifier is a lean, well-structured Next.js 16 application with 
 **Recommendation:**
 
 Add bundle analyzer to `next.config.ts`:
+
 ```typescript
 import type { NextConfig } from "next";
 import bundleAnalyzer from "@next/bundle-analyzer";
@@ -50,10 +53,12 @@ Run with: `ANALYZE=true npm run build`
 ### Image Optimization
 
 **Current State: EXCELLENT**
+
 - No images used (zero image optimization overhead)
 - Pure SVG for checkmark icon (embedded, no external requests)
 
 **No action needed.** If images are added in future:
+
 ```typescript
 // Use Next.js Image component for automatic optimization
 import Image from "next/image";
@@ -73,6 +78,7 @@ import Image from "next/image";
 ### Dynamic Code Loading & Lazy Loading
 
 **Current State: BASIC**
+
 - Components use React.lazy() — NOT used
 - All dimensions loaded at once
 - Questions rendered synchronously
@@ -83,15 +89,15 @@ import Image from "next/image";
 
 ```typescript
 // src/components/DimensionLoader.tsx (new)
-'use client';
+"use client";
 
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy } from "react";
 
 const BudgetDimension = lazy(() =>
-  import('./dimensions/BudgetDimension').then(m => ({ default: m.BudgetDimension }))
+  import("./dimensions/BudgetDimension").then((m) => ({ default: m.BudgetDimension })),
 );
 const AuthorityDimension = lazy(() =>
-  import('./dimensions/AuthorityDimension').then(m => ({ default: m.AuthorityDimension }))
+  import("./dimensions/AuthorityDimension").then((m) => ({ default: m.AuthorityDimension })),
 );
 // ... other dimensions
 
@@ -109,6 +115,7 @@ export function useDimensionComponent(dimensionKey: string) {
 ```
 
 Usage in `page.tsx`:
+
 ```typescript
 const DimensionComponent = useDimensionComponent(dimensionKey);
 
@@ -128,18 +135,21 @@ const DimensionComponent = useDimensionComponent(dimensionKey);
 ### CSS & Styling
 
 **Current State: EXCELLENT**
+
 - Tailwind CSS 4.2.1 (latest, smaller than v3)
 - Using `@import "tailwindcss"` (directive) — good
 - Minimal custom CSS (only one `@keyframes` in result page)
 - PostCSS configured via Tailwind
 
 **Opportunities:**
+
 1. Extract `@keyframes fade-in` to `globals.css` (DRY, reusable)
 2. Consider CSS-in-JS for animation configs to enable theme switching
 
 **Recommendation:**
 
 Move animation to globals.css:
+
 ```css
 /* src/app/globals.css */
 @import "tailwindcss";
@@ -181,6 +191,7 @@ Result page: simplify to `<div className="animate-fade-in" style={{animationDela
 ### Current State: CRITICAL GAP
 
 **Missing Error Boundaries:**
+
 - No React Error Boundary
 - No try-catch for parsing JSON in result page
 - No validation of URL parameters before parsing
@@ -188,6 +199,7 @@ Result page: simplify to `<div className="animate-fade-in" style={{animationDela
 **Issues Found:**
 
 1. **Result page routing validation is weak:**
+
 ```typescript
 // src/app/result/page.tsx (line 27-31)
 if (mounted && (!score || !qualified || !breakdownParam)) {
@@ -195,9 +207,11 @@ if (mounted && (!score || !qualified || !breakdownParam)) {
   return null;
 }
 ```
+
 **Problem:** If `score` is "0", it's falsy and redirects. Should use explicit null check.
 
 2. **JSON parsing has no error recovery:**
+
 ```typescript
 let breakdown: Record<string, number> = {};
 try {
@@ -206,6 +220,7 @@ try {
   breakdown = {};
 }
 ```
+
 **Problem:** Silent failure. User sees empty breakdown with no indication why. Should log warning.
 
 3. **No error boundary for page crashes**
@@ -213,6 +228,7 @@ try {
 ### Recommendations:
 
 **A. Create Error Boundary:**
+
 ```typescript
 // src/components/ErrorBoundary.tsx
 'use client';
@@ -269,6 +285,7 @@ export class ErrorBoundary extends React.Component<
 ```
 
 Usage in `layout.tsx`:
+
 ```typescript
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -290,6 +307,7 @@ export default function RootLayout({
 ```
 
 **B. Fix Result Page Validation:**
+
 ```typescript
 // src/app/result/page.tsx
 function ResultContent() {
@@ -340,6 +358,7 @@ function ResultContent() {
 **C. Validate URL Parameters at Entry:**
 
 Create a utility for safe URL parsing:
+
 ```typescript
 // src/lib/urlValidation.ts
 export interface ResultParams {
@@ -348,9 +367,10 @@ export interface ResultParams {
   breakdown: Record<string, number>;
 }
 
-export function validateResultParams(
-  searchParams: URLSearchParams
-): { data: ResultParams | null; error: string | null } {
+export function validateResultParams(searchParams: URLSearchParams): {
+  data: ResultParams | null;
+  error: string | null;
+} {
   try {
     const score = searchParams.get("score");
     const qualified = searchParams.get("qualified");
@@ -393,11 +413,13 @@ export function validateResultParams(
 ### Current State: PARTIAL
 
 **Good:**
+
 - No dynamic server-side rendering beyond initial load
 - All business logic (scoring) is pure functions
 - Components support RSC pattern
 
 **Issues:**
+
 1. **Route handlers missing** — no `/api/*` structure for future integrations
 2. **Not static-export ready** — uses `useRouter()` for navigation
 3. **No explicit output configuration for Vercel/Cloudflare**
@@ -408,47 +430,42 @@ export function validateResultParams(
 
 ```typescript
 // src/app/api/score/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { calculateScore } from '@/lib/scoring';
-import { qualificationConfig } from '@/config/qualification';
+import { NextRequest, NextResponse } from "next/server";
+import { calculateScore } from "@/lib/scoring";
+import { qualificationConfig } from "@/config/qualification";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { answers } = body;
 
-    if (!answers || typeof answers !== 'object') {
-      return NextResponse.json(
-        { error: 'Invalid request body' },
-        { status: 400 }
-      );
+    if (!answers || typeof answers !== "object") {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
     const result = calculateScore(answers, qualificationConfig);
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Score calculation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to calculate score' },
-      { status: 500 }
-    );
+    console.error("Score calculation error:", error);
+    return NextResponse.json({ error: "Failed to calculate score" }, { status: 500 });
   }
 }
 ```
 
 Usage in `page.tsx`:
+
 ```typescript
 const handleSubmit = useCallback(async () => {
   setIsSubmitting(true);
   try {
-    const response = await fetch('/api/score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ answers }),
     });
 
-    if (!response.ok) throw new Error('Score calculation failed');
+    if (!response.ok) throw new Error("Score calculation failed");
 
     const result = await response.json();
     const params = new URLSearchParams({
@@ -457,14 +474,14 @@ const handleSubmit = useCallback(async () => {
       breakdown: JSON.stringify(
         Object.entries(result.breakdown).reduce(
           (acc, [key, val]) => ({ ...acc, [key]: val.percentage }),
-          {}
-        )
+          {},
+        ),
       ),
     });
 
     router.push(`/result?${params.toString()}`);
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
     setIsSubmitting(false);
     // Show error toast
   }
@@ -474,6 +491,7 @@ const handleSubmit = useCallback(async () => {
 **B. Configure for Edge Deployment:**
 
 Update `next.config.ts`:
+
 ```typescript
 import type { NextConfig } from "next";
 
@@ -483,15 +501,12 @@ const nextConfig: NextConfig = {
 
   // Optimize for edge runtime (Vercel Edge, Cloudflare)
   experimental: {
-    optimizePackageImports: [
-      'react',
-      'react-dom',
-    ],
+    optimizePackageImports: ["react", "react-dom"],
   },
 
   // Image optimization
   images: {
-    formats: ['image/webp', 'image/avif'],
+    formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 31536000, // 1 year for static images
   },
 
@@ -502,20 +517,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/static/:path*',
+        source: "/static/:path*",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
         ],
       },
@@ -526,13 +541,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/book',
-        destination: 'https://cal.com/yourdomain/demo',
+        source: "/book",
+        destination: "https://cal.com/yourdomain/demo",
         permanent: false,
       },
       {
-        source: '/guide',
-        destination: 'https://example.com/guide.pdf',
+        source: "/guide",
+        destination: "https://example.com/guide.pdf",
         permanent: false,
       },
     ];
@@ -572,7 +587,9 @@ export default nextConfig;
 ### Current State: MINIMAL
 
 **Issues:**
+
 1. **Root metadata is generic:**
+
 ```typescript
 // src/app/layout.tsx
 export const metadata: Metadata = {
@@ -714,6 +731,7 @@ export function StructuredData() {
 ```
 
 Usage in `layout.tsx`:
+
 ```typescript
 import { StructuredData } from '@/components/StructuredData';
 
@@ -763,6 +781,7 @@ export async function generateMetadata({
 ### Current State: POOR
 
 **Critical Issues:**
+
 1. **No ARIA labels** on interactive buttons
 2. **No alt text structure** for SVG icons
 3. **Color contrast** — blues on light backgrounds may fail WCAG AA
@@ -987,6 +1006,7 @@ However, improve with darker shade for WCAG AAA:
 ### Current State: FAILS GRACEFULLY
 
 **What Happens with JavaScript Disabled:**
+
 - App becomes non-functional (expected for interactive quiz)
 - No fallback content
 
@@ -1028,6 +1048,7 @@ export default function RootLayout({
 ### Loading States & Skeleton Screens
 
 **Current State: PARTIAL**
+
 - Submit button shows spinner (good)
 - Result page has Suspense boundary (good)
 - But no skeleton for questions while loading
@@ -1057,6 +1078,7 @@ export function QuestionCardSkeleton() {
 ### Current State: GOOD
 
 **Strengths:**
+
 1. ✅ Components properly memoized (`React.memo`)
 2. ✅ Callbacks optimized with `useCallback`
 3. ✅ Type-safe with strict TypeScript
@@ -1064,6 +1086,7 @@ export function QuestionCardSkeleton() {
 5. ✅ Pure scoring function (easily testable)
 
 **Issues:**
+
 1. **Prop drilling** — `onSelect` callback passed through 2 levels
 2. **State management** — all state in page.tsx (OK for this size, but brittle if it grows)
 3. **Magic strings** — URL param names scattered in code
@@ -1075,15 +1098,15 @@ export function QuestionCardSkeleton() {
 ```typescript
 // src/lib/queryParams.ts
 export const RESULT_PARAMS = {
-  SCORE: 'score',
-  QUALIFIED: 'qualified',
-  BREAKDOWN: 'breakdown',
+  SCORE: "score",
+  QUALIFIED: "qualified",
+  BREAKDOWN: "breakdown",
 } as const;
 
 export function createResultUrl(
   score: number,
   qualified: boolean,
-  breakdown: Record<string, number>
+  breakdown: Record<string, number>,
 ): string {
   const params = new URLSearchParams({
     [RESULT_PARAMS.SCORE]: String(score),
@@ -1106,13 +1129,13 @@ export function parseResultParams(params: URLSearchParams) {
 
 ```typescript
 // src/hooks/useQuiz.ts
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { calculateScore } from '@/lib/scoring';
-import { qualificationConfig } from '@/config/qualification';
-import { createResultUrl } from '@/lib/queryParams';
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { calculateScore } from "@/lib/scoring";
+import { qualificationConfig } from "@/config/qualification";
+import { createResultUrl } from "@/lib/queryParams";
 
 export function useQuiz() {
   const router = useRouter();
@@ -1121,29 +1144,26 @@ export function useQuiz() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSelectOption = useCallback(
-    (questionId: string, value: string) => {
-      setAnswers((prev) => ({
-        ...prev,
-        [questionId]: value,
-      }));
-      setError(null);
-    },
-    []
-  );
+  const handleSelectOption = useCallback((questionId: string, value: string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: value,
+    }));
+    setError(null);
+  }, []);
 
   const handleNext = useCallback(() => {
     const dimensions = Object.entries(qualificationConfig.dimensions);
     if (currentStep < dimensions.length - 1) {
       setCurrentStep((prev) => prev + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [currentStep]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [currentStep]);
 
@@ -1155,19 +1175,19 @@ export function useQuiz() {
       const scoreResult = calculateScore(answers, qualificationConfig);
       const breakdownPercentages = Object.entries(scoreResult.breakdown).reduce(
         (acc, [key, val]) => ({ ...acc, [key]: val.percentage }),
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
 
       const resultUrl = createResultUrl(
         scoreResult.totalScore,
         scoreResult.qualified,
-        breakdownPercentages
+        breakdownPercentages,
       );
 
       router.push(resultUrl);
     } catch (err) {
-      console.error('Error calculating score:', err);
-      setError('Failed to process your answers. Please try again.');
+      console.error("Error calculating score:", err);
+      setError("Failed to process your answers. Please try again.");
       setIsSubmitting(false);
     }
   }, [answers, router]);
@@ -1186,8 +1206,9 @@ export function useQuiz() {
 ```
 
 Usage in `page.tsx`:
+
 ```typescript
-import { useQuiz } from '@/hooks/useQuiz';
+import { useQuiz } from "@/hooks/useQuiz";
 
 export default function Home() {
   const {
@@ -1232,26 +1253,26 @@ src/app/api/
 
 ```typescript
 // src/middleware.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Add security headers
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
   // Add request ID for tracing
-  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
-  response.headers.set('X-Request-ID', requestId);
+  const requestId = request.headers.get("x-request-id") || crypto.randomUUID();
+  response.headers.set("X-Request-ID", requestId);
 
   return response;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
 ```
 
@@ -1267,15 +1288,15 @@ export interface AnalyticsEvent {
 
 export class Analytics {
   static trackQuizStart() {
-    this.track('quiz_started', {});
+    this.track("quiz_started", {});
   }
 
   static trackQuestionAnswered(questionId: string, value: string) {
-    this.track('question_answered', { questionId, value });
+    this.track("question_answered", { questionId, value });
   }
 
   static trackQuizSubmitted(score: number, qualified: boolean) {
-    this.track('quiz_submitted', { score, qualified });
+    this.track("quiz_submitted", { score, qualified });
   }
 
   private static track(event: string, properties: Record<string, any>) {
@@ -1287,8 +1308,8 @@ export class Analytics {
     };
 
     // Fire and forget (don't block user interaction)
-    if (typeof window !== 'undefined' && navigator.sendBeacon) {
-      navigator.sendBeacon('/api/events', JSON.stringify(payload));
+    if (typeof window !== "undefined" && navigator.sendBeacon) {
+      navigator.sendBeacon("/api/events", JSON.stringify(payload));
     }
   }
 }
@@ -1298,16 +1319,16 @@ export class Analytics {
 
 ## Summary of Priority Upgrades
 
-| Priority | Item | Effort | Impact | Recommendation |
-|----------|------|--------|--------|-----------------|
-| **P0** | Error boundary | 1h | HIGH | Implement immediately |
-| **P0** | URL param validation | 1h | HIGH | Implement immediately |
-| **P1** | Accessibility fixes | 3h | MEDIUM | Before production launch |
-| **P1** | SEO metadata | 2h | MEDIUM | Before production launch |
-| **P1** | API route structure | 2h | MEDIUM | Move scoring to /api |
-| **P2** | Middleware for security | 1h | LOW | Nice-to-have |
-| **P2** | Bundle analyzer setup | 30m | LOW | For monitoring growth |
-| **P3** | Lazy load dimensions | 3h | LOW | Only if >8 dimensions |
+| Priority | Item                    | Effort | Impact | Recommendation           |
+| -------- | ----------------------- | ------ | ------ | ------------------------ |
+| **P0**   | Error boundary          | 1h     | HIGH   | Implement immediately    |
+| **P0**   | URL param validation    | 1h     | HIGH   | Implement immediately    |
+| **P1**   | Accessibility fixes     | 3h     | MEDIUM | Before production launch |
+| **P1**   | SEO metadata            | 2h     | MEDIUM | Before production launch |
+| **P1**   | API route structure     | 2h     | MEDIUM | Move scoring to /api     |
+| **P2**   | Middleware for security | 1h     | LOW    | Nice-to-have             |
+| **P2**   | Bundle analyzer setup   | 30m    | LOW    | For monitoring growth    |
+| **P3**   | Lazy load dimensions    | 3h     | LOW    | Only if >8 dimensions    |
 
 ---
 
@@ -1339,6 +1360,7 @@ export class Analytics {
 ## Files to Review/Update
 
 **Create:**
+
 - `/src/components/ErrorBoundary.tsx`
 - `/src/hooks/useQuiz.ts`
 - `/src/lib/queryParams.ts`
@@ -1349,6 +1371,7 @@ export class Analytics {
 - `/src/components/StructuredData.tsx`
 
 **Update:**
+
 - `/src/app/layout.tsx` — add metadata, ErrorBoundary, StructuredData
 - `/src/app/page.tsx` — use useQuiz hook
 - `/src/app/result/page.tsx` — fix validation, add metadata

@@ -306,13 +306,7 @@ Subtle moving gradient in the background of the main pages.
 }
 
 .bg-animated-gradient {
-  background: linear-gradient(
-    -45deg,
-    #e0f2fe,
-    #dbeafe,
-    #f0f9ff,
-    #e0f2fe
-  );
+  background: linear-gradient(-45deg, #e0f2fe, #dbeafe, #f0f9ff, #e0f2fe);
   background-size: 400% 400%;
   animation: gradient-shift 15s ease infinite;
 }
@@ -328,12 +322,7 @@ Subtle moving gradient in the background of the main pages.
 }
 
 .text-shimmer {
-  background: linear-gradient(
-    90deg,
-    #1f2937 25%,
-    #4b5563 50%,
-    #1f2937 75%
-  );
+  background: linear-gradient(90deg, #1f2937 25%, #4b5563 50%, #1f2937 75%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -695,7 +684,7 @@ Skip irrelevant questions based on previous answers. For example, if budget is "
  * Adaptive question logic — determine which questions to show based on answers
  */
 
-import type { QualificationConfig, Question } from '@/types';
+import type { QualificationConfig, Question } from "@/types";
 
 export interface AdaptiveQuestion extends Question {
   condition?: (answers: Record<string, string>) => boolean;
@@ -704,7 +693,7 @@ export interface AdaptiveQuestion extends Question {
 
 export function shouldShowQuestion(
   question: AdaptiveQuestion,
-  answers: Record<string, string>
+  answers: Record<string, string>,
 ): boolean {
   if (!question.condition) return true;
   return question.condition(answers);
@@ -712,28 +701,29 @@ export function shouldShowQuestion(
 
 export function getFollowUpMessage(
   lastAnswered: { questionId: string; value: string },
-  config: QualificationConfig
+  config: QualificationConfig,
 ): string {
   const messages: Record<string, string> = {
-    'large-budget': '💰 Excellent! With that budget, we can deliver significant value.',
-    'immediate-urgency': '⏰ We love working with time-sensitive projects — let\'s discuss timeline.',
-    'critical-pain': '🎯 Critical pain points need decisive solutions. Are you the decision maker?',
+    "large-budget": "💰 Excellent! With that budget, we can deliver significant value.",
+    "immediate-urgency":
+      "⏰ We love working with time-sensitive projects — let's discuss timeline.",
+    "critical-pain": "🎯 Critical pain points need decisive solutions. Are you the decision maker?",
   };
 
   const key = `${lastAnswered.value}`;
-  return messages[key] || '';
+  return messages[key] || "";
 }
 
 // Example: Skip authority questions if not a decision maker at budget stage
 export const adaptiveConfig = {
-  'decision-role': (answers: Record<string, string>) => {
+  "decision-role": (answers: Record<string, string>) => {
     // Always show this
     return true;
   },
-  'buying-process': (answers: Record<string, string>) => {
+  "buying-process": (answers: Record<string, string>) => {
     // Only show if they're at least a contributor
-    const role = answers['decision-role'];
-    return role !== 'researcher';
+    const role = answers["decision-role"];
+    return role !== "researcher";
   },
 };
 ```
@@ -937,7 +927,7 @@ export interface AIFollowUpQuestion {
   id: string;
   text: string;
   placeholder?: string;
-  type: 'text' | 'multiline' | 'select';
+  type: "text" | "multiline" | "select";
   options?: { label: string; value: string }[];
 }
 
@@ -945,14 +935,14 @@ export interface PersonalizedCTA {
   text: string;
   url: string;
   reason: string; // Why this CTA was chosen
-  urgency: 'high' | 'medium' | 'low';
+  urgency: "high" | "medium" | "low";
 }
 
 /**
  * Hook 1: Generate personalized follow-up question based on answers
  */
 export async function generateFollowUpQuestion(
-  context: AIHookContext
+  context: AIHookContext,
 ): Promise<AIFollowUpQuestion | null> {
   // If you have an LLM API configured:
   // const response = await fetch('/api/ai/follow-up', {
@@ -964,10 +954,10 @@ export async function generateFollowUpQuestion(
   // For now, return hardcoded example
   if (context.score >= 70) {
     return {
-      id: 'demo-follow-up',
+      id: "demo-follow-up",
       text: `You look like a strong fit! Before we book a call, what's your biggest current challenge?`,
-      type: 'multiline',
-      placeholder: 'Tell us more about your pain point...',
+      type: "multiline",
+      placeholder: "Tell us more about your pain point...",
     };
   }
 
@@ -977,33 +967,31 @@ export async function generateFollowUpQuestion(
 /**
  * Hook 2: Personalize CTA based on qualification profile
  */
-export async function personalizeResultCTA(
-  context: AIHookContext
-): Promise<PersonalizedCTA> {
+export async function personalizeResultCTA(context: AIHookContext): Promise<PersonalizedCTA> {
   // Example logic (replace with LLM call for real personalization)
   if (context.qualified && context.breakdown.urgency > 0.7) {
     return {
-      text: 'Schedule a Strategy Call Today',
-      url: '/book?urgency=high',
-      reason: 'High urgency + qualified = fast-track to call',
-      urgency: 'high',
+      text: "Schedule a Strategy Call Today",
+      url: "/book?urgency=high",
+      reason: "High urgency + qualified = fast-track to call",
+      urgency: "high",
     };
   }
 
   if (!context.qualified) {
     return {
-      text: 'Download Our Implementation Guide',
-      url: '/guide',
-      reason: 'Not qualified yet — educate them first',
-      urgency: 'low',
+      text: "Download Our Implementation Guide",
+      url: "/guide",
+      reason: "Not qualified yet — educate them first",
+      urgency: "low",
     };
   }
 
   return {
-    text: 'Book a No-Pressure Consultation',
-    url: '/book',
-    reason: 'Qualified but not urgent — soft touch',
-    urgency: 'medium',
+    text: "Book a No-Pressure Consultation",
+    url: "/book",
+    reason: "Qualified but not urgent — soft touch",
+    urgency: "medium",
   };
 }
 
@@ -1012,15 +1000,16 @@ export async function personalizeResultCTA(
  * Called when user tries to navigate away with low score
  */
 export async function getObjectionResponse(
-  lowScoreReason: string // e.g., "budget", "timeline", "authority"
+  lowScoreReason: string, // e.g., "budget", "timeline", "authority"
 ): Promise<string> {
   const responses: Record<string, string> = {
-    budget: 'No budget yet? Many of our best clients started small. Let\'s discuss flexible options.',
-    timeline: 'Long timeline ahead? We often help compress timelines with proper planning.',
-    authority: 'Not the decision maker? We can help you make the case to leadership.',
+    budget:
+      "No budget yet? Many of our best clients started small. Let's discuss flexible options.",
+    timeline: "Long timeline ahead? We often help compress timelines with proper planning.",
+    authority: "Not the decision maker? We can help you make the case to leadership.",
   };
 
-  return responses[lowScoreReason] || '';
+  return responses[lowScoreReason] || "";
 }
 ```
 
@@ -1437,7 +1426,8 @@ Add to `src/app/globals.css`:
 
 /* Floating elements (for score preview, badges) */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -1451,7 +1441,8 @@ Add to `src/app/globals.css`:
 
 /* Pulse for attention-grabbing */
 @keyframes pulse-attention {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -1588,10 +1579,10 @@ export async function POST(req: Request) {
 
   // For now, return mock
   return Response.json({
-    id: 'follow-up-1',
-    text: 'What would success look like for your team?',
-    type: 'multiline',
-    placeholder: 'Describe your ideal outcome...',
+    id: "follow-up-1",
+    text: "What would success look like for your team?",
+    type: "multiline",
+    placeholder: "Describe your ideal outcome...",
   });
 }
 ```
@@ -1606,9 +1597,9 @@ export async function POST(req: Request) {
   // ...
 
   return Response.json({
-    text: 'Book Strategy Call',
-    url: '/book?source=qualified',
-    reason: 'High qualification + urgent timeline',
+    text: "Book Strategy Call",
+    url: "/book?source=qualified",
+    reason: "High qualification + urgent timeline",
   });
 }
 ```
@@ -1618,24 +1609,28 @@ export async function POST(req: Request) {
 ## Implementation Roadmap
 
 ### Week 1: Foundation (Visual Magic)
+
 - [ ] Implement SparkleParticles component
 - [ ] Implement ShimmerBorder component
 - [ ] Implement Confetti component
 - [ ] Add animation CSS to globals.css
 
 ### Week 2: Micro-Interactions
+
 - [ ] Enhance QuestionCard with scale animations
 - [ ] Implement InteractiveButton component
 - [ ] Update ProgressBar with pulsing glow
 - [ ] Test all transitions on mobile/desktop
 
 ### Week 3: Smart UX
+
 - [ ] Implement ScorePreview floating widget
 - [ ] Implement StepEncouragement messages
 - [ ] Implement AdaptiveQuestion logic
 - [ ] Add real-time scoring to page.tsx
 
 ### Week 4: AI Architecture & Engagement
+
 - [ ] Implement AIHooks system
 - [ ] Create FollowUpQuestion component
 - [ ] Create ObjectionHandler component
@@ -1643,6 +1638,7 @@ export async function POST(req: Request) {
 - [ ] Create API endpoints for AI features
 
 ### Week 5: Testing & Polish
+
 - [ ] Visual regression testing (Chromatic/Percy)
 - [ ] Mobile responsiveness audit
 - [ ] Accessibility audit (a11y)
@@ -1650,6 +1646,7 @@ export async function POST(req: Request) {
 - [ ] A/B test confetti vs no-confetti
 
 ### Week 6: Deployment
+
 - [ ] Deploy to production
 - [ ] Monitor engagement metrics
 - [ ] Collect user feedback
@@ -1684,4 +1681,3 @@ export async function POST(req: Request) {
 - **Animation library (alternative):** `Framer Motion` for orchestrated sequences
 - **AI/LLM integration:** Claude API docs: https://docs.anthropic.com/
 - **CSS animations:** MDN Web Docs on CSS Animations and Transitions
-

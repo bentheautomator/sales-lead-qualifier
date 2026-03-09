@@ -22,6 +22,7 @@ Target state: Intelligent system that explains weak BANT areas, suggests next st
 **What it does:** Dynamically adjust dimension weights based on company size and industry hints.
 
 **Example:**
+
 ```
 Standard config: Budget(30%) + Authority(25%) + Need(30%) + Timeline(15%)
 
@@ -39,30 +40,28 @@ Adjust to: Budget(20%) + Authority(20%) + Need(40%) + Timeline(20%)
 Create `src/lib/adaptive-scoring.ts`:
 
 ```typescript
-import type { QualificationConfig, ScoreResult } from '@/types';
+import type { QualificationConfig, ScoreResult } from "@/types";
 
 interface CompanyProfile {
-  size: 'startup' | 'smb' | 'mid-market' | 'enterprise' | 'unknown';
+  size: "startup" | "smb" | "mid-market" | "enterprise" | "unknown";
   industry?: string;
-  urgency: 'immediate' | 'quarter' | 'year' | 'someday';
+  urgency: "immediate" | "quarter" | "year" | "someday";
 }
 
 /**
  * Infer company profile from answers
  */
-export function inferCompanyProfile(
-  answers: Record<string, string>
-): CompanyProfile {
-  const budget = answers['budget-range'];
-  const urgency = answers['urgency'] || 'someday';
+export function inferCompanyProfile(answers: Record<string, string>): CompanyProfile {
+  const budget = answers["budget-range"];
+  const urgency = answers["urgency"] || "someday";
 
-  let size: CompanyProfile['size'] = 'unknown';
+  let size: CompanyProfile["size"] = "unknown";
 
   // Infer company size from budget
-  if (budget === 'large') size = 'enterprise';
-  else if (budget === 'medium') size = 'mid-market';
-  else if (budget === 'small') size = 'smb';
-  else if (budget === 'minimal') size = 'startup';
+  if (budget === "large") size = "enterprise";
+  else if (budget === "medium") size = "mid-market";
+  else if (budget === "small") size = "smb";
+  else if (budget === "minimal") size = "startup";
 
   return { size, urgency };
 }
@@ -72,7 +71,7 @@ export function inferCompanyProfile(
  */
 export function getAdaptiveWeights(
   baseConfig: QualificationConfig,
-  profile: CompanyProfile
+  profile: CompanyProfile,
 ): Record<string, number> {
   const baseWeights = {
     budget: baseConfig.dimensions.budget.weight,
@@ -84,25 +83,25 @@ export function getAdaptiveWeights(
   let weights = { ...baseWeights };
 
   // Adjust for enterprise deals (longer sales cycles, more approval)
-  if (profile.size === 'enterprise') {
+  if (profile.size === "enterprise") {
     weights = {
       budget: 0.25,
       authority: 0.35, // More important for complex orgs
-      need: 0.30,
-      timeline: 0.10, // Less urgent
+      need: 0.3,
+      timeline: 0.1, // Less urgent
     };
   }
   // Adjust for startups (fast-moving, budget-constrained)
-  else if (profile.size === 'startup') {
+  else if (profile.size === "startup") {
     weights = {
-      budget: 0.20,
-      authority: 0.20,
-      need: 0.40, // Problem-solution fit is critical
-      timeline: 0.20,
+      budget: 0.2,
+      authority: 0.2,
+      need: 0.4, // Problem-solution fit is critical
+      timeline: 0.2,
     };
   }
   // Adjust for SMBs (balanced, need-driven)
-  else if (profile.size === 'smb') {
+  else if (profile.size === "smb") {
     weights = {
       budget: 0.25,
       authority: 0.25,
@@ -112,7 +111,7 @@ export function getAdaptiveWeights(
   }
 
   // Adjust for immediate urgency (boost timeline weight)
-  if (profile.urgency === 'immediate') {
+  if (profile.urgency === "immediate") {
     weights.timeline *= 1.3;
     weights.need *= 1.1;
   }
@@ -131,7 +130,7 @@ export function getAdaptiveWeights(
  */
 export function calculateAdaptiveScore(
   answers: Record<string, string>,
-  baseConfig: QualificationConfig
+  baseConfig: QualificationConfig,
 ): ScoreResult & { profile: CompanyProfile; weights: Record<string, number> } {
   const profile = inferCompanyProfile(answers);
   const adaptiveWeights = getAdaptiveWeights(baseConfig, profile);
@@ -140,21 +139,15 @@ export function calculateAdaptiveScore(
   const breakdown: Record<string, any> = {};
   let weightedSum = 0;
 
-  for (const [dimensionKey, dimension] of Object.entries(
-    baseConfig.dimensions
-  )) {
+  for (const [dimensionKey, dimension] of Object.entries(baseConfig.dimensions)) {
     let dimensionScore = 0;
     let maxDimensionScore = 0;
 
     for (const question of dimension.questions) {
       const answerValue = answers[question.id];
-      const selectedOption = question.options.find(
-        (opt) => opt.value === answerValue
-      );
+      const selectedOption = question.options.find((opt) => opt.value === answerValue);
       const pointsForQuestion = selectedOption?.points ?? 0;
-      const maxPointsForQuestion = Math.max(
-        ...question.options.map((opt) => opt.points)
-      );
+      const maxPointsForQuestion = Math.max(...question.options.map((opt) => opt.points));
 
       dimensionScore += pointsForQuestion;
       maxDimensionScore += maxPointsForQuestion;
@@ -188,6 +181,7 @@ export function calculateAdaptiveScore(
 ```
 
 **Usage in result page:**
+
 ```typescript
 const { profile, weights } = scoreResult; // From calculateAdaptiveScore
 
@@ -202,6 +196,7 @@ const { profile, weights } = scoreResult; // From calculateAdaptiveScore
 **What it does:** Use Claude API to generate smart next steps based on weak BANT areas.
 
 **Example output:**
+
 ```
 Based on your answers:
 - Your Need score is strong (85%)
@@ -217,7 +212,7 @@ you, recommend connecting with them first."
 Create `src/app/api/insights/route.ts` (Vercel Edge Function):
 
 ```typescript
-import { Anthropic } from '@anthropic-ai/sdk';
+import { Anthropic } from "@anthropic-ai/sdk";
 
 interface InsightRequest {
   score: number;
@@ -236,7 +231,7 @@ export async function POST(request: Request) {
 
   const prompt = `You are a B2B sales qualification expert. Analyze this lead's BANT assessment:
 
-Score: ${body.score}/100 (${body.qualified ? 'Qualified' : 'Not Qualified'})
+Score: ${body.score}/100 (${body.qualified ? "Qualified" : "Not Qualified"})
 Breakdown:
 - Budget: ${body.breakdown.budget}%
 - Authority: ${body.breakdown.authority}%
@@ -254,12 +249,12 @@ Keep it concise (3-4 sentences max per insight). Be direct and practical.`;
 
   try {
     const stream = await client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 300,
       stream: true,
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
@@ -270,10 +265,7 @@ Keep it concise (3-4 sentences max per insight). Be direct and practical.`;
     const readable = new ReadableStream({
       async start(controller) {
         for await (const event of stream) {
-          if (
-            event.type === 'content_block_delta' &&
-            event.delta.type === 'text_delta'
-          ) {
+          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
             controller.enqueue(encoder.encode(event.delta.text));
           }
         }
@@ -282,11 +274,11 @@ Keep it concise (3-4 sentences max per insight). Be direct and practical.`;
     });
 
     return new Response(readable, {
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   } catch (error) {
-    console.error('AI insights error:', error);
-    return new Response('Failed to generate insights', { status: 500 });
+    console.error("AI insights error:", error);
+    return new Response("Failed to generate insights", { status: 500 });
   }
 }
 ```
@@ -357,7 +349,7 @@ Create `src/lib/risk-detection.ts`:
 
 ```typescript
 interface RiskFlag {
-  level: 'warning' | 'caution' | 'info';
+  level: "warning" | "caution" | "info";
   message: string;
   recommendation: string;
 }
@@ -367,49 +359,43 @@ interface RiskFlag {
  */
 export function detectRiskFlags(
   answers: Record<string, string>,
-  breakdown: Record<string, number>
+  breakdown: Record<string, number>,
 ): RiskFlag[] {
   const flags: RiskFlag[] = [];
 
   // Red flag: High need but low budget = affordability risk
   if (breakdown.need > 75 && breakdown.budget < 40) {
     flags.push({
-      level: 'warning',
-      message: 'High need, low budget — This is painful but not fundable.',
-      recommendation:
-        'Focus conversation on ROI. Can solving this problem save money elsewhere?',
+      level: "warning",
+      message: "High need, low budget — This is painful but not fundable.",
+      recommendation: "Focus conversation on ROI. Can solving this problem save money elsewhere?",
     });
   }
 
   // Red flag: Low authority + formal buying process = long sales cycle
-  if (breakdown.authority < 50 && answers['buying-process'] === 'formal') {
+  if (breakdown.authority < 50 && answers["buying-process"] === "formal") {
     flags.push({
-      level: 'caution',
-      message: 'Complex buying process with unclear decision-maker.',
+      level: "caution",
+      message: "Complex buying process with unclear decision-maker.",
       recommendation: 'Ask: "Who else needs to be involved in this decision?"',
     });
   }
 
   // Red flag: Low urgency + long timeline = low priority
-  if (answers['urgency'] === 'someday' && answers['implementation'] === 'distant') {
+  if (answers["urgency"] === "someday" && answers["implementation"] === "distant") {
     flags.push({
-      level: 'caution',
-      message: 'This is not a priority. Lead may deprioritize after demo.',
-      recommendation:
-        'Set expectations: "When would this need to be solved?" Get a hard date.',
+      level: "caution",
+      message: "This is not a priority. Lead may deprioritize after demo.",
+      recommendation: 'Set expectations: "When would this need to be solved?" Get a hard date.',
     });
   }
 
   // Good sign: High need + strong authority + short timeline = quick deal
-  if (
-    breakdown.need > 80 &&
-    breakdown.authority > 75 &&
-    answers['urgency'] === 'immediate'
-  ) {
+  if (breakdown.need > 80 && breakdown.authority > 75 && answers["urgency"] === "immediate") {
     flags.push({
-      level: 'info',
-      message: '🚀 Fast-track opportunity. High urgency, clear authority, urgent need.',
-      recommendation: 'Schedule product demo ASAP. Momentum is your friend.',
+      level: "info",
+      message: "🚀 Fast-track opportunity. High urgency, clear authority, urgent need.",
+      recommendation: "Schedule product demo ASAP. Momentum is your friend.",
     });
   }
 
@@ -495,50 +481,50 @@ Give 2-3 actionable insights for the sales rep. Be direct.`,
 Create `__tests__/ai-intelligence.test.ts`:
 
 ```typescript
-import { inferCompanyProfile, getAdaptiveWeights, detectRiskFlags } from '@/lib/ai-intelligence';
-import { qualificationConfig } from '@/config/qualification';
+import { inferCompanyProfile, getAdaptiveWeights, detectRiskFlags } from "@/lib/ai-intelligence";
+import { qualificationConfig } from "@/config/qualification";
 
-describe('AI Intelligence', () => {
-  describe('Company Profile Inference', () => {
-    it('infers enterprise profile from large budget', () => {
-      const answers = { 'budget-range': 'large' };
+describe("AI Intelligence", () => {
+  describe("Company Profile Inference", () => {
+    it("infers enterprise profile from large budget", () => {
+      const answers = { "budget-range": "large" };
       const profile = inferCompanyProfile(answers);
-      expect(profile.size).toBe('enterprise');
+      expect(profile.size).toBe("enterprise");
     });
 
-    it('infers startup profile from minimal budget', () => {
-      const answers = { 'budget-range': 'minimal' };
+    it("infers startup profile from minimal budget", () => {
+      const answers = { "budget-range": "minimal" };
       const profile = inferCompanyProfile(answers);
-      expect(profile.size).toBe('startup');
+      expect(profile.size).toBe("startup");
     });
   });
 
-  describe('Adaptive Weights', () => {
-    it('increases authority weight for enterprise', () => {
-      const profile = { size: 'enterprise' as const, urgency: 'quarter' as const };
+  describe("Adaptive Weights", () => {
+    it("increases authority weight for enterprise", () => {
+      const profile = { size: "enterprise" as const, urgency: "quarter" as const };
       const weights = getAdaptiveWeights(qualificationConfig, profile);
       expect(weights.authority).toBeGreaterThan(0.3);
     });
 
-    it('increases need weight for startups', () => {
-      const profile = { size: 'startup' as const, urgency: 'immediate' as const };
+    it("increases need weight for startups", () => {
+      const profile = { size: "startup" as const, urgency: "immediate" as const };
       const weights = getAdaptiveWeights(qualificationConfig, profile);
       expect(weights.need).toBeGreaterThan(0.3);
     });
   });
 
-  describe('Risk Detection', () => {
-    it('flags high need + low budget combination', () => {
+  describe("Risk Detection", () => {
+    it("flags high need + low budget combination", () => {
       const breakdown = { need: 85, budget: 30, authority: 50, timeline: 60 };
       const flags = detectRiskFlags({}, breakdown);
-      expect(flags.some((f) => f.message.includes('High need'))).toBe(true);
+      expect(flags.some((f) => f.message.includes("High need"))).toBe(true);
     });
 
-    it('flags low urgency + long timeline', () => {
+    it("flags low urgency + long timeline", () => {
       const breakdown = { need: 60, budget: 60, authority: 60, timeline: 60 };
-      const answers = { urgency: 'someday', implementation: 'distant' };
+      const answers = { urgency: "someday", implementation: "distant" };
       const flags = detectRiskFlags(answers, breakdown);
-      expect(flags.some((f) => f.message.includes('not a priority'))).toBe(true);
+      expect(flags.some((f) => f.message.includes("not a priority"))).toBe(true);
     });
   });
 });
@@ -549,11 +535,13 @@ describe('AI Intelligence', () => {
 ## Environment Variables
 
 **`.env.local`:**
+
 ```
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 **`next.config.js`:**
+
 ```javascript
 module.exports = {
   env: {

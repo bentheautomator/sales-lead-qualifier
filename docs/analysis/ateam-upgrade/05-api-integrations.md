@@ -20,10 +20,10 @@ Target state: Lead storage, webhook endpoints, CRM integration adapters, Zapier 
 **File:** `src/app/api/leads/route.ts`
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { validateResultQuery } from '@/lib/validation';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { validateResultQuery } from "@/lib/validation";
+import { z } from "zod";
 
 // POST /api/leads - Create a new lead
 export async function POST(request: NextRequest) {
@@ -36,10 +36,12 @@ export async function POST(request: NextRequest) {
       qualified: z.boolean(),
       breakdown: z.record(z.number()),
       answers: z.record(z.string()),
-      profile: z.object({
-        size: z.string(),
-        urgency: z.string(),
-      }).optional(),
+      profile: z
+        .object({
+          size: z.string(),
+          urgency: z.string(),
+        })
+        .optional(),
       email: z.string().email().optional(),
       company: z.string().optional(),
       source: z.string().optional(),
@@ -48,8 +50,8 @@ export async function POST(request: NextRequest) {
     const validationResult = LeadSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Invalid request body', issues: validationResult.error.issues },
-        { status: 400 }
+        { error: "Invalid request body", issues: validationResult.error.issues },
+        { status: 400 },
       );
     }
 
@@ -69,16 +71,10 @@ export async function POST(request: NextRequest) {
     // Trigger webhooks asynchronously
     triggerWebhooks(lead).catch(console.error);
 
-    return NextResponse.json(
-      { id: lead.id, qualified: lead.qualified },
-      { status: 201 }
-    );
+    return NextResponse.json({ id: lead.id, qualified: lead.qualified }, { status: 201 });
   } catch (error) {
-    console.error('Error creating lead:', error);
-    return NextResponse.json(
-      { error: 'Failed to create lead' },
-      { status: 500 }
-    );
+    console.error("Error creating lead:", error);
+    return NextResponse.json({ error: "Failed to create lead" }, { status: 500 });
   }
 }
 
@@ -86,25 +82,22 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Check auth (implement basic token auth)
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get("authorization");
     if (!authHeader || !verifyApiToken(authHeader)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = request.nextUrl;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const qualified = searchParams.get('qualified');
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const qualified = searchParams.get("qualified");
 
-    const where = qualified !== null ? { qualified: qualified === 'true' } : {};
+    const where = qualified !== null ? { qualified: qualified === "true" } : {};
 
     const [leads, total] = await Promise.all([
       prisma.lead.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
         select: {
@@ -129,44 +122,38 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching leads:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch leads' },
-      { status: 500 }
-    );
+    console.error("Error fetching leads:", error);
+    return NextResponse.json({ error: "Failed to fetch leads" }, { status: 500 });
   }
 }
 
 // DELETE /api/leads/:id - Delete a lead (admin only)
 export async function DELETE(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (!authHeader || !verifyApiToken(authHeader)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const url = new URL(request.url);
-    const id = url.pathname.split('/').pop();
+    const id = url.pathname.split("/").pop();
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing lead ID' }, { status: 400 });
+      return NextResponse.json({ error: "Missing lead ID" }, { status: 400 });
     }
 
     await prisma.lead.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting lead:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete lead' },
-      { status: 500 }
-    );
+    console.error("Error deleting lead:", error);
+    return NextResponse.json({ error: "Failed to delete lead" }, { status: 500 });
   }
 }
 
 // Helper: Verify API token
 function verifyApiToken(authHeader: string): boolean {
-  const token = authHeader.replace('Bearer ', '');
+  const token = authHeader.replace("Bearer ", "");
   return token === process.env.ADMIN_API_TOKEN;
 }
 
@@ -176,20 +163,20 @@ async function triggerWebhooks(lead: any) {
   const webhooks = await prisma.webhook.findMany({
     where: {
       lead: { qualified: true },
-      status: 'pending',
+      status: "pending",
     },
   });
 
   for (const webhook of webhooks) {
     try {
       const response = await fetch(webhook.endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Webhook-Signature': generateSignature(JSON.stringify(lead)),
+          "Content-Type": "application/json",
+          "X-Webhook-Signature": generateSignature(JSON.stringify(lead)),
         },
         body: JSON.stringify({
-          event: 'lead.qualified',
+          event: "lead.qualified",
           data: lead,
           timestamp: new Date().toISOString(),
         }),
@@ -199,7 +186,7 @@ async function triggerWebhooks(lead: any) {
       await prisma.webhook.update({
         where: { id: webhook.id },
         data: {
-          status: response.ok ? 'sent' : 'failed',
+          status: response.ok ? "sent" : "failed",
           response: await response.text(),
           sentAt: new Date(),
         },
@@ -210,7 +197,7 @@ async function triggerWebhooks(lead: any) {
       await prisma.webhook.update({
         where: { id: webhook.id },
         data: {
-          status: 'failed',
+          status: "failed",
           response: String(error),
         },
       });
@@ -220,11 +207,11 @@ async function triggerWebhooks(lead: any) {
 
 // Helper: Generate webhook signature (HMAC-SHA256)
 function generateSignature(payload: string): string {
-  const crypto = require('crypto');
+  const crypto = require("crypto");
   return crypto
-    .createHmac('sha256', process.env.WEBHOOK_SECRET || 'secret')
+    .createHmac("sha256", process.env.WEBHOOK_SECRET || "secret")
     .update(payload)
-    .digest('hex');
+    .digest("hex");
 }
 ```
 
@@ -235,16 +222,16 @@ function generateSignature(payload: string): string {
 **File:** `src/app/api/webhooks/route.ts`
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 
 // POST /api/webhooks - Register a webhook endpoint
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get("authorization");
     if (!authHeader || !verifyApiToken(authHeader)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -252,15 +239,12 @@ export async function POST(request: NextRequest) {
     const WebhookSchema = z.object({
       leadId: z.string(),
       endpoint: z.string().url(),
-      event: z.enum(['lead.qualified', 'lead.created', 'lead.updated']),
+      event: z.enum(["lead.qualified", "lead.created", "lead.updated"]),
     });
 
     const validation = WebhookSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Invalid webhook data' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid webhook data" }, { status: 400 });
     }
 
     const webhook = await prisma.webhook.create({
@@ -272,11 +256,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(webhook, { status: 201 });
   } catch (error) {
-    console.error('Error creating webhook:', error);
-    return NextResponse.json(
-      { error: 'Failed to create webhook' },
-      { status: 500 }
-    );
+    console.error("Error creating webhook:", error);
+    return NextResponse.json({ error: "Failed to create webhook" }, { status: 500 });
   }
 }
 
@@ -284,7 +265,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
-    const id = url.pathname.split('/').pop();
+    const id = url.pathname.split("/").pop();
 
     const webhook = await prisma.webhook.findUnique({
       where: { id },
@@ -292,47 +273,38 @@ export async function GET(request: NextRequest) {
     });
 
     if (!webhook) {
-      return NextResponse.json(
-        { error: 'Webhook not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
     }
 
     return NextResponse.json(webhook);
   } catch (error) {
-    console.error('Error fetching webhook:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch webhook' },
-      { status: 500 }
-    );
+    console.error("Error fetching webhook:", error);
+    return NextResponse.json({ error: "Failed to fetch webhook" }, { status: 500 });
   }
 }
 
 // DELETE /api/webhooks/:id - Unregister webhook
 export async function DELETE(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (!authHeader || !verifyApiToken(authHeader)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const url = new URL(request.url);
-    const id = url.pathname.split('/').pop();
+    const id = url.pathname.split("/").pop();
 
     await prisma.webhook.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting webhook:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete webhook' },
-      { status: 500 }
-    );
+    console.error("Error deleting webhook:", error);
+    return NextResponse.json({ error: "Failed to delete webhook" }, { status: 500 });
   }
 }
 
 function verifyApiToken(authHeader: string): boolean {
-  const token = authHeader.replace('Bearer ', '');
+  const token = authHeader.replace("Bearer ", "");
   return token === process.env.ADMIN_API_TOKEN;
 }
 ```
@@ -344,73 +316,67 @@ function verifyApiToken(authHeader: string): boolean {
 **File:** `src/app/api/export/route.ts`
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 // GET /api/export?format=csv&qualified=true
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get("authorization");
     if (!authHeader || !verifyApiToken(authHeader)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = request.nextUrl;
-    const format = searchParams.get('format') || 'csv';
-    const qualified = searchParams.get('qualified');
+    const format = searchParams.get("format") || "csv";
+    const qualified = searchParams.get("qualified");
 
-    const where = qualified !== null ? { qualified: qualified === 'true' } : {};
+    const where = qualified !== null ? { qualified: qualified === "true" } : {};
 
     const leads = await prisma.lead.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
-    if (format === 'csv') {
+    if (format === "csv") {
       const csv = generateCsv(leads);
       return new NextResponse(csv, {
         headers: {
-          'Content-Type': 'text/csv',
-          'Content-Disposition': 'attachment; filename="leads.csv"',
+          "Content-Type": "text/csv",
+          "Content-Disposition": 'attachment; filename="leads.csv"',
         },
       });
-    } else if (format === 'json') {
+    } else if (format === "json") {
       return NextResponse.json(leads);
     } else {
-      return NextResponse.json(
-        { error: 'Unsupported format' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Unsupported format" }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error exporting leads:', error);
-    return NextResponse.json(
-      { error: 'Failed to export leads' },
-      { status: 500 }
-    );
+    console.error("Error exporting leads:", error);
+    return NextResponse.json({ error: "Failed to export leads" }, { status: 500 });
   }
 }
 
 function generateCsv(leads: any[]): string {
   const headers = [
-    'ID',
-    'Score',
-    'Qualified',
-    'Email',
-    'Company',
-    'Budget',
-    'Authority',
-    'Need',
-    'Timeline',
-    'Created',
+    "ID",
+    "Score",
+    "Qualified",
+    "Email",
+    "Company",
+    "Budget",
+    "Authority",
+    "Need",
+    "Timeline",
+    "Created",
   ];
 
   const rows = leads.map((lead) => [
     lead.id,
     lead.score,
-    lead.qualified ? 'Yes' : 'No',
-    lead.email || '',
-    lead.company || '',
+    lead.qualified ? "Yes" : "No",
+    lead.email || "",
+    lead.company || "",
     (lead.breakdown?.budget || 0).toFixed(1),
     (lead.breakdown?.authority || 0).toFixed(1),
     (lead.breakdown?.need || 0).toFixed(1),
@@ -419,15 +385,15 @@ function generateCsv(leads: any[]): string {
   ]);
 
   const csvContent = [
-    headers.join(','),
-    ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
-  ].join('\n');
+    headers.join(","),
+    ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+  ].join("\n");
 
   return csvContent;
 }
 
 function verifyApiToken(authHeader: string): boolean {
-  const token = authHeader.replace('Bearer ', '');
+  const token = authHeader.replace("Bearer ", "");
   return token === process.env.ADMIN_API_TOKEN;
 }
 ```
@@ -439,7 +405,7 @@ function verifyApiToken(authHeader: string): boolean {
 **File:** `src/lib/integrations/hubspot.ts`
 
 ```typescript
-import type { Lead } from '@prisma/client';
+import type { Lead } from "@prisma/client";
 
 interface HubSpotConfig {
   accessToken: string;
@@ -457,29 +423,26 @@ export class HubSpotAdapter {
    * Create a contact in HubSpot
    */
   async createContact(lead: Lead): Promise<{ id: string; url: string }> {
-    const response = await fetch(
-      'https://api.hubapi.com/crm/v3/objects/contacts',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.config.accessToken}`,
+    const response = await fetch("https://api.hubapi.com/crm/v3/objects/contacts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.config.accessToken}`,
+      },
+      body: JSON.stringify({
+        properties: {
+          firstname: lead.company || "Unknown",
+          email: lead.email,
+          company: lead.company,
+          hs_lead_status: lead.qualified ? "qualified" : "disqualified",
+          qualification_score: lead.score,
+          bant_budget: lead.breakdown?.budget || 0,
+          bant_authority: lead.breakdown?.authority || 0,
+          bant_need: lead.breakdown?.need || 0,
+          bant_timeline: lead.breakdown?.timeline || 0,
         },
-        body: JSON.stringify({
-          properties: {
-            firstname: lead.company || 'Unknown',
-            email: lead.email,
-            company: lead.company,
-            hs_lead_status: lead.qualified ? 'qualified' : 'disqualified',
-            qualification_score: lead.score,
-            bant_budget: lead.breakdown?.budget || 0,
-            bant_authority: lead.breakdown?.authority || 0,
-            bant_need: lead.breakdown?.need || 0,
-            bant_timeline: lead.breakdown?.timeline || 0,
-          },
-        }),
-      }
-    );
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`HubSpot API error: ${response.statusText}`);
@@ -497,22 +460,22 @@ export class HubSpotAdapter {
    * Create a deal in HubSpot for qualified leads
    */
   async createDeal(contactId: string, lead: Lead): Promise<string> {
-    const response = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
-      method: 'POST',
+    const response = await fetch("https://api.hubapi.com/crm/v3/objects/deals", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${this.config.accessToken}`,
       },
       body: JSON.stringify({
         properties: {
-          dealname: `${lead.company || 'Unknown'} - BANT Qualified`,
-          dealstage: 'negotiation',
+          dealname: `${lead.company || "Unknown"} - BANT Qualified`,
+          dealstage: "negotiation",
           amount: 0, // Will be filled in later
           qualification_score: lead.score,
         },
         associations: [
           {
-            types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }],
+            types: [{ associationCategory: "HUBSPOT_DEFINED", associationTypeId: 3 }],
             id: contactId,
           },
         ],
@@ -532,7 +495,7 @@ export class HubSpotAdapter {
 **File:** `src/lib/integrations/salesforce.ts`
 
 ```typescript
-import type { Lead } from '@prisma/client';
+import type { Lead } from "@prisma/client";
 
 interface SalesforceConfig {
   instanceUrl: string;
@@ -555,10 +518,10 @@ export class SalesforceAdapter {
     if (this.accessToken) return this.accessToken;
 
     const response = await fetch(`${this.config.instanceUrl}/services/oauth2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        grant_type: 'client_credentials',
+        grant_type: "client_credentials",
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
       }).toString(),
@@ -576,24 +539,21 @@ export class SalesforceAdapter {
   async createLead(lead: Lead): Promise<string> {
     const token = await this.authenticate();
 
-    const response = await fetch(
-      `${this.config.instanceUrl}/services/data/v60.0/sobjects/Lead/`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          Company: lead.company || 'Unknown',
-          Email: lead.email,
-          LeadSource: 'BANT Qualifier',
-          Status: lead.qualified ? 'Open' : 'Disqualified',
-          Rating: getRating(lead.score),
-          Description: `BANT Score: ${lead.score}\nBudget: ${lead.breakdown?.budget}%\nAuthority: ${lead.breakdown?.authority}%\nNeed: ${lead.breakdown?.need}%\nTimeline: ${lead.breakdown?.timeline}%`,
-        }),
-      }
-    );
+    const response = await fetch(`${this.config.instanceUrl}/services/data/v60.0/sobjects/Lead/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        Company: lead.company || "Unknown",
+        Email: lead.email,
+        LeadSource: "BANT Qualifier",
+        Status: lead.qualified ? "Open" : "Disqualified",
+        Rating: getRating(lead.score),
+        Description: `BANT Score: ${lead.score}\nBudget: ${lead.breakdown?.budget}%\nAuthority: ${lead.breakdown?.authority}%\nNeed: ${lead.breakdown?.need}%\nTimeline: ${lead.breakdown?.timeline}%`,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`Salesforce API error: ${response.statusText}`);
@@ -605,9 +565,9 @@ export class SalesforceAdapter {
 }
 
 function getRating(score: number): string {
-  if (score >= 80) return 'Hot';
-  if (score >= 60) return 'Warm';
-  return 'Cold';
+  if (score >= 80) return "Hot";
+  if (score >= 60) return "Warm";
+  return "Cold";
 }
 ```
 
@@ -672,6 +632,7 @@ function getRating(score: number): string {
 ```
 
 **Zapier integration flow (example):**
+
 ```
 Webhook (Sales Lead Qualifier) → Create HubSpot Contact → Add Tag (if qualified) → Send Email → Create Slack Message
 ```
@@ -683,14 +644,14 @@ Webhook (Sales Lead Qualifier) → Create HubSpot Contact → Add Tag (if qualif
 **File:** `src/lib/idempotency.ts`
 
 ```typescript
-import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
+import { prisma } from "@/lib/prisma";
+import crypto from "crypto";
 
 /**
  * Check if request has already been processed (idempotency key)
  */
 export async function checkIdempotency(
-  idempotencyKey: string
+  idempotencyKey: string,
 ): Promise<{ processed: boolean; result?: any }> {
   const cache = await prisma.idempotencyCache.findUnique({
     where: { key: idempotencyKey },
@@ -706,10 +667,7 @@ export async function checkIdempotency(
 /**
  * Store result of processing for idempotency
  */
-export async function storeIdempotencyResult(
-  idempotencyKey: string,
-  result: any
-): Promise<void> {
+export async function storeIdempotencyResult(idempotencyKey: string, result: any): Promise<void> {
   await prisma.idempotencyCache.create({
     data: {
       key: idempotencyKey,
@@ -723,14 +681,12 @@ export async function storeIdempotencyResult(
  * Generate idempotency key from request data
  */
 export function generateIdempotencyKey(data: any): string {
-  return crypto
-    .createHash('sha256')
-    .update(JSON.stringify(data))
-    .digest('hex');
+  return crypto.createHash("sha256").update(JSON.stringify(data)).digest("hex");
 }
 ```
 
 **Add to Prisma schema:**
+
 ```prisma
 model IdempotencyCache {
   key       String   @id
@@ -753,14 +709,18 @@ model IdempotencyCache {
 
 ## Base URL
 ```
+
 https://qualifier.example.com/api
+
 ```
 
 ## Authentication
 All endpoints (except webhooks) require an API token:
 ```
+
 Authorization: Bearer YOUR_API_TOKEN
-```
+
+````
 
 ## Endpoints
 
@@ -777,9 +737,10 @@ Request:
   "email": "john@example.com",
   "company": "Acme Corp"
 }
-```
+````
 
 Response:
+
 ```json
 {
   "id": "lead_123",
@@ -788,14 +749,17 @@ Response:
 ```
 
 ### GET /leads
+
 List all leads.
 
 Query params:
+
 - `page` (default: 1)
 - `limit` (default: 50)
 - `qualified` (true|false)
 
 Response:
+
 ```json
 {
   "leads": [...],
@@ -804,14 +768,18 @@ Response:
 ```
 
 ### GET /export?format=csv
+
 Export leads as CSV or JSON.
 
 ### POST /webhooks
+
 Register a webhook for lead events.
 
 ### DELETE /webhooks/:id
+
 Unregister a webhook.
-```
+
+````
 
 ---
 
@@ -841,7 +809,7 @@ export function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
-```
+````
 
 ---
 
@@ -871,11 +839,11 @@ DATABASE_URL=postgresql://...
 **File:** `__tests__/api.test.ts`
 
 ```typescript
-describe('API Endpoints', () => {
-  describe('POST /api/leads', () => {
-    it('creates a lead and triggers webhooks', async () => {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
+describe("API Endpoints", () => {
+  describe("POST /api/leads", () => {
+    it("creates a lead and triggers webhooks", async () => {
+      const response = await fetch("/api/leads", {
+        method: "POST",
         body: JSON.stringify({
           score: 75,
           qualified: true,
@@ -886,24 +854,24 @@ describe('API Endpoints', () => {
 
       expect(response.status).toBe(201);
       const data = await response.json();
-      expect(data).toHaveProperty('id');
+      expect(data).toHaveProperty("id");
     });
   });
 
-  describe('GET /api/leads', () => {
-    it('requires authentication', async () => {
-      const response = await fetch('/api/leads');
+  describe("GET /api/leads", () => {
+    it("requires authentication", async () => {
+      const response = await fetch("/api/leads");
       expect(response.status).toBe(401);
     });
 
-    it('returns paginated leads', async () => {
-      const response = await fetch('/api/leads?page=1&limit=10', {
+    it("returns paginated leads", async () => {
+      const response = await fetch("/api/leads?page=1&limit=10", {
         headers: { Authorization: `Bearer ${process.env.ADMIN_API_TOKEN}` },
       });
 
       expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data).toHaveProperty('pagination');
+      expect(data).toHaveProperty("pagination");
     });
   });
 });
