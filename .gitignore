@@ -42,3 +42,4 @@ next-env.d.ts
 # Codemap cache (auto-generated)
 .codemap/
 test-results/
+*.orig
